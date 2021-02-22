@@ -1,1 +1,1 @@
-# app.studying.com
+# Empty config base URL
