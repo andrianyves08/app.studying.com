@@ -402,7 +402,7 @@ $(document).ready(function() {
   $.getJSON('<?php echo base_url(); ?>user-status', function(data) {
     if (!data.isLoggedIn) {
       window.location.href = "<?php echo base_url(); ?>login";
-    } else if (data.status == 1) {
+    } else if (data.status == 0 && !data.a) {
       window.location.href = "<?php echo base_url(); ?>maintenance";
     } else {
       var html = '';

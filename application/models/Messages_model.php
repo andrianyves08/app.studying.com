@@ -5,6 +5,22 @@
         $this->load->database();
     }
 
+    public function get_message($chat_ID){
+		$this->db->select('messages.*, users.first_name, users.last_name');
+		$this->db->join('users', 'messages.fromID = users.id');
+		$this->db->where('messages.id', $chat_ID);
+		$query = $this->db->get('messages');
+		return $query->row_array();
+	}
+
+	public function get_group_message($chat_ID){
+		$this->db->select('group_messages.*, users.first_name, users.last_name');
+		$this->db->join('users', 'group_messages.sender_ID = users.id');
+		$this->db->where('group_messages.id', $chat_ID);
+		$query = $this->db->get('group_messages');
+		return $query->row_array();
+	}
+
 	public function all_users(){
 		$this->db->select('id, first_name, last_name');
 		$this->db->where('status', '1');
@@ -22,7 +38,7 @@
 		$this->db->where('messages.fromID', $user_ID);
 		$this->db->or_where('messages.toID', $user_ID);
 		$this->db->group_by("users.id");
-		$this->db->order_by('messages.timestamp', 'DESC');
+		$this->db->order_by('max(messages.timestamp)', 'DESC');
 		$query = $this->db->get('messages');
 		return $query->result_array();
 	}
@@ -48,21 +64,21 @@
 	}
 
 	public function messages($limit, $user_ID, $toID){
-		$this->db->select('users.image as usImg, messages.fromID as fromID, messages.toID as toID, messages.message as chat, messages.status as mesStat, messages.timestamp as mesSent, messages.id as chatID');
+		$this->db->select('users.image as usImg, messages.fromID as fromID, messages.toID as toID, messages.message as chat, messages.status as mesStat, messages.timestamp as mesSent, messages.id as chat_ID, messages.parent_message as parent_message, users.first_name as first_name, users.last_name as last_name');
 		$this->db->join('users', 'messages.fromID = users.id');
 		$where = "(fromID = '$toID' AND toID = '$user_ID') OR (fromID = '$user_ID' AND toID = '$toID')";
 		$this->db->where($where);
 		$this->db->order_by('messages.timestamp', 'DESC');
-		$this->db->limit($limit);
+		if(!empty($limit)){
+			$this->db->limit($limit);
+		}
 
 		$query = $this->db->get('messages');
-		
 		return $query->result_array();
-
 	}
 
 	public function group_messages($limit, $user_ID, $group_ID){
-		$this->db->select('users.image as usImg, group_messages.sender_ID as sender_ID, group_messages.group_ID as group_ID, group_messages.message as chat, group_messages.status as mesStat, group_messages.timestamp as mesSent, group_messages.id as chatID, users.first_name as first_name, users.last_name as last_name');
+		$this->db->select('users.image as usImg, group_messages.sender_ID as sender_ID, group_messages.group_ID as group_ID, group_messages.message as chat, group_messages.status as mesStat, group_messages.timestamp as mesSent, group_messages.id as chat_ID, group_messages.parent_message as parent_message, users.first_name as first_name, users.last_name as last_name');
 		$this->db->join('users', 'group_messages.sender_ID = users.id');
 		$where = "(group_ID = '$group_ID' AND sender_ID = '$user_ID') OR (group_ID = '$group_ID' AND sender_ID != '$user_ID')";
 		$this->db->where($where);
@@ -73,12 +89,13 @@
 		return $query->result_array();
 	}
 
-	public function message_sent($user_ID, $toID, $message){
+	public function send_message($user_ID, $toID, $message, $chat_ID){
 		$this->db->trans_begin();
 		$data = array(
 			'toID' => $toID,
 			'fromID' => $user_ID,
 			'message' => $message,
+			'parent_message' => $chat_ID,
 			'status' => '0'
 		);
 
@@ -94,14 +111,14 @@
 		    $this->db->trans_commit();
 		    return true;
 		}
-		
 	}
 
-	public function group_message_sent($user_ID, $group_ID, $message){
+	public function send_group_message($user_ID, $group_ID, $message, $chat_ID){
 		$this->db->trans_begin();
 		$data = array(
 			'group_ID' => $group_ID,
 			'sender_ID' => $user_ID,
+			'parent_message' => $chat_ID,
 			'message' => $message,
 			'status' => '0'
 		);
@@ -118,7 +135,6 @@
 		    $this->db->trans_commit();
 		    return true;
 		}
-		
 	}
 
 	public function message_seen($user_ID, $toID){
@@ -201,7 +217,6 @@
 				$this->db->insert('group_members', $data2);
 			}
 		}
-
 		if ($this->db->trans_status() === FALSE){
 		    $this->db->trans_rollback();
 		    return false;
@@ -209,7 +224,5 @@
 		    $this->db->trans_commit();
 		    return true;
 		}
-		
 	}
-
 }

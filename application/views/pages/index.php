@@ -114,7 +114,6 @@
               <button class="btn btn-primary btn-sm" type="submit" id="create_posts">Posts</button>
             </div>
           </div>
-        
         </div> <!-- Card -->
       </div><!--column-->
     </div><!--row-->

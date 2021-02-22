@@ -43,6 +43,8 @@
 		return $query->result_array();
     }
 
+    // select learnecom.course.slug as course_slug, learnecom.course.row as course_row, learnecom.course.title as course_title, learnecom.course.id as course_ID, learnecom.programs.slug as program_slug, min(learnecom.course_section.slug) as section_slug from learnecom.course join learnecom.programs_modules on learnecom.programs_modules.course_ID = learnecom.course.id join opencart.oc_order_product on opencart.oc_order_product.product_id = learnecom.programs_modules.program_ID join opencart.oc_order on opencart.oc_order.order_id = opencart.oc_order_product.order_id join opencart.oc_order_history on opencart.oc_order_history.order_id = opencart.oc_order.order_id join learnecom.programs on learnecom.programs_modules.program_ID = learnecom.programs.id join learnecom.course_section on learnecom.course_section.course_ID = learnecom.course.id where opencart.oc_order.customer_id = '$id' and opencart.oc_order_history.order_status_id = '5' and learnecom.course.status = '1' and learnecom.course.title like '%$search%' group by learnecom.course_section.course_ID order by learnecom.course.row asc
+
     public function search_course($slug, $search, $id){
     	$this->db->select('
     		course.slug as course_slug,
@@ -175,11 +177,6 @@
 	public function sort_course($id, $row){
 		$this->db->set('row', $row);
 		$this->db->where('title', $id);
-
-		$this->db->cache_delete('home', 'index');
-		$this->db->cache_delete('default', 'index');
-		$this->db->cache_delete('courses', 'get_section');
-		$this->db->cache_delete('admin', 'modules');
 		
 		return $this->db->update('course');
 	}
@@ -235,11 +232,6 @@
 		);
 		$this->db->where('id', $id);
 		$this->db->update('course', $data);
-		$this->db->cache_delete('home', 'index');
-		$this->db->cache_delete('default', 'index');
-		$this->db->cache_delete('courses', 'get_section');
-		$this->db->cache_delete('admin', 'modules');
-
 		$this->course_status($id, $status);
 
 		if ($this->db->trans_status() === FALSE){
@@ -566,16 +558,6 @@
 		$this->db->set('last_updated', 'NOW()', FALSE);
 		$this->db->where('id', $content_ID);
 		$this->db->update('course_section_lesson_content', $data);
-
-		$this->db->cache_delete('admin', 'contents');
-		$this->db->cache_delete('home', 'index');
-		$this->db->cache_delete('default', 'index');
-		$this->db->cache_delete('courses', 'get_section');
-		$this->db->cache_delete('admin', 'modules');
-		$this->db->cache_delete('modules', 'index');
-		$this->db->cache_delete('courses', 'get_section_2');
-		$this->db->cache_delete('courses', 'get_lesson_by_id');
-		$this->db->cache_delete('courses', 'get_content_by_id');
 		
 		if ($this->db->trans_status() === FALSE){
 		    $this->db->trans_rollback();

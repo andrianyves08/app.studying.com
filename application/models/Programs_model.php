@@ -143,4 +143,22 @@
 		    return true;
 		}
 	}
+
+	public function add_image($image, $product_ID){
+		$this->db->trans_begin();
+
+        $data = array(
+        	'product_ID' => $product_ID,
+			'image' => $image
+		);
+		$this->db->insert('products_images', $data);
+
+		if ($this->db->trans_status() === FALSE){
+		    $this->db->trans_rollback();
+		    return false;
+		} else{
+		    $this->db->trans_commit();
+		    return true;
+		}
+	}
 }

@@ -3,7 +3,16 @@
 
     public function __construct(){
         $this->load->database();
+        //$this->db2 = $this->load->database('opencart', TRUE);
     }
+
+
+    function all_videos(){
+    	$this->db->where('duration is NOT NULL', NULL, FALSE);
+		$this->db->group_by('src');
+		$query = $this->db->get('videos');
+		return $query->result_array();
+	}
 
     function accept_reward($user_ID, $reward){
 		$this->db->trans_begin();
@@ -144,8 +153,7 @@
 
 	function get_user_by_id($id){
 		$this->db->select('*, users_level.exp as current_level, level.name as level_name,
-			users.exp as user_exp
-		');
+			users.exp as user_exp');
 		$this->db->join('users_level', 'users.level = users_level.level');
 		$this->db->join('level', 'level.id = users_level.name');
 		$this->db->where('users.id', $id);
@@ -224,13 +232,14 @@
 		return $this->db->update('users');
 	}
 
-	function change_profile($first_name, $last_name, $profile_photo, $bio, $email){	
+	function change_profile($first_name, $last_name, $profile_photo, $bio, $email, $user_ID){	
 		$this->db->set('first_name', strtolower($first_name));
 		$this->db->set('last_name', strtolower($last_name));
 		$this->db->set('image', $profile_photo);
 		$this->db->set('bio', $bio);
 		$this->db->set('status', '1');
-		$this->db->where('email', strtolower($email));
+		$this->db->set('email', strtolower($email));
+		$this->db->where('id', $user_ID);
 		return $this->db->update('users');
 	}
 
@@ -303,13 +312,13 @@
 	    $this->db->join('course', 'course.id = course_section.course_ID');
 	    $this->db->join('programs_modules', 'course.id = programs_modules.course_ID');
 	    $this->db->join('programs', 'programs.id = programs_modules.program_ID');
-		$this->db->where('user_ID', $user_id);
+		$this->db->where('videos.user_ID', $user_id);
 		$this->db->order_by('videos.timestamp', 'DESC');
 		$this->db->limit(1);
 		$query = $this->db->get('videos');
 		return $query->row_array();
 	}
-// select count(video_watched.user_ID) as total from video_watched join course_section_lesson_content on course_section_lesson_content.id = video_watched.content_ID join course_section_lesson on course_section_lesson.id = course_section_lesson_content.lesson_ID join course_section on course_section.id = course_section_lesson.section_ID join course on course.id = course_section.course_ID where video_watched.user_ID = '1' and course.slug = 'studyingcom-services-use-my-team'
+
 	function users_videos_watched($slug, $section_slug, $user_id){
 		$this->db->select('count(video_watched.user_ID) as total');
 	    $this->db->join('course_section_lesson_content', 'course_section_lesson_content.id = video_watched.content_ID');
@@ -405,7 +414,6 @@
 		    $this->db->trans_commit();
 		    return true;
 		}
-
 	}
 
 	function users_progress($user_ID){
@@ -458,7 +466,7 @@
 		if ($this->db->trans_status() === FALSE){
 		    $this->db->trans_rollback();
 		    return false;
-		} else{
+		} else {
 		    $this->db->trans_commit();
 		    return true;
 		}	
@@ -468,7 +476,6 @@
 		$this->db->select('count(*) as total');
 		$this->db->where('email', strtolower($email));
 		$query = $this->db->get('software_rating');
-
 		$result = $query->row_array();
 
 		return $result;
@@ -503,7 +510,6 @@
 
     	$query = $this->db->get('videos');
 		return $query->row_array();
-
     }
 
     public function create_notes($section_ID, $notes, $user_ID){
@@ -532,7 +538,6 @@
     	$this->db->order_by('timestamp', 'DESC');
 
     	$query = $this->db->get('users_notes');
-
     	return $query->result_array();
     }
 
@@ -544,7 +549,6 @@
     	$this->db->order_by('users_notes.timestamp', 'DESC');
 
     	$query = $this->db->get('users_notes');
-
     	return $query->result_array();
     }
 

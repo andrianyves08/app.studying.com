@@ -10,7 +10,6 @@
     </div>
   </div>
   <!-- Heading -->
-
   <div class="row">
     <div class="col-md-12">
       <div class="card">
@@ -52,7 +51,6 @@
   </div><!--Row-->
 </div><!--Container-->
 </main><!--Main laypassed out-->
-
 <!-- Are you sure -->
 <div class="modal fade" id="createnews" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
   aria-hidden="true">

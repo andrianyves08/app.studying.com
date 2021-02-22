@@ -9,7 +9,7 @@
     </picture>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
       aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-    <i class="fas fa-bars <?php echo $settings['nav_text_color'];?>"></i>
+    <i class="fas fa-bars blue-text"></i>
     </button>
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mr-auto">
@@ -28,7 +28,7 @@
       </ul>
       <ul class="navbar-nav nav-flex-icons">
         <li class="nav-item avatar dropdown mr-0">
-          <a class="nav-link dropdown-toggle dropdown-toggle_2 <?php echo $settings['nav_text_color'];?>" id="seen_notification" data-toggle="dropdown"
+          <a class="nav-link dropdown-toggle dropdown-toggle_2 blue-text" id="seen_notification" data-toggle="dropdown"
             aria-haspopup="true" aria-expanded="false">
             <i class="fas fa-bell" id="notification_bell"></i>
           </a>
@@ -36,7 +36,7 @@
           </div>
         </li>
         <li class="nav-item dropdown">
-           <a class="nav-link dropdown-toggle <?php echo $settings['nav_text_color'];?>" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+           <a class="nav-link dropdown-toggle blue-text" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <strong>
               My Modules</strong>
           </a>
@@ -45,14 +45,14 @@
           </div>
         </li>
         <li class="nav-item">
-          <a href="<?php echo base_url(); ?>messages" class="nav-link waves-effect <?php echo $settings['nav_text_color'];?>">
+          <a href="<?php echo base_url(); ?>messages" class="nav-link waves-effect blue-text">
            <strong>
            Messages</strong>
           <?php if($unseen_chat > 0){ echo '<span class="badge badge-danger badge-pill">'.$unseen_chat.'</span>'; } ?>
           </a>
         </li>
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle waves-effect waves-light <?php echo $settings['nav_text_color'];?> my_info" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <a class="nav-link dropdown-toggle waves-effect waves-light blue-text my_info" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           </a>
           <div class="dropdown-menu dropdown-menu-right dropdown-default" aria-labelledby="navbarDropdownMenuLink">
             <a class="dropdown-item waves-effect waves-light" href="<?php echo base_url(); ?>my-profile">My Profile</a>

@@ -65,4 +65,16 @@
 		$this->db->where('id', $id);
 		return $this->db->update('pages');
 	}
+
+	function change_review_post_status($status){
+		$this->db->set('review_post_status', $status);
+		$this->db->where('id', 1);
+		return $this->db->update('settings');
+	}
+
+	function change_system_status($status){
+		$this->db->set('system_status', $status);
+		$this->db->where('id', 1);
+		return $this->db->update('settings');
+	}
 }

@@ -187,7 +187,7 @@ class Users extends CI_Controller {
 			$bio = $this->input->post('bio');
 		}
 
-		$create = $this->user_model->change_profile($this->input->post('first_name'), $this->input->post('last_name'), $profile_photo, $bio, $this->session->userdata('email'));
+		$create = $this->user_model->change_profile($this->input->post('first_name'), $this->input->post('last_name'), $profile_photo, $bio, $this->session->userdata('email'), $this->session->userdata('user_id'));
 		if($create){
 			$this->session->set_flashdata('success', 'Update successfully');
 		}
@@ -264,6 +264,11 @@ class Users extends CI_Controller {
 			);
 		}
 		echo json_encode($create);
+	}
+
+	function all_videos(){
+		$data = $this->user_model->all_videos();
+		echo json_encode($data);
 	}
 
 	function get_current_progress(){

@@ -20,14 +20,14 @@
               <th>Status</th>
               <th>Date Created</th>
               <th></th>
-              </thead>user_ID
+              </thead>
               <tbody>
                 <?php foreach($posts as $post){ ?> 
                 <tr>
                   <td><?php echo ucwords($post['posts']);?><br>
-                      <?php if (!empty($post['post_image'])) {?>
-                        <img src="<?php echo base_url().'assets/img/posts/'.hash('md5', $post['user_ID']).'/'.$post['post_image'];?>" style="width: 200px"/>
-                      <?php } ?>
+                    <?php if (!empty($post['post_image'])) {?>
+                      <img src="<?php echo base_url().'assets/img/posts/'.hash('md5', $post['user_ID']).'/'.$post['post_image'];?>" style="width: 200px"/>
+                    <?php } ?>
                   </td>
                   <td><?php echo ucwords($post['first_name']);?> <?php echo ucwords($post['last_name']);?></td>
                   <td>
@@ -108,7 +108,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary btn-sm" id="not_accept_post">Confirm</button>
+        <button type="button" class="btn btn-primary btn-sm" id="deny_post">Confirm</button>
       </div>
     </div>
   </div>
@@ -190,12 +190,12 @@ $(document).ready(function(){
     $('[name="deny_user_id"]').val(user_ID);
   });
 
-  $("#not_accept_post").click(function(){
+  $("#deny_post").click(function(){
     var post_ID = $('[name="deny_post_id"]').val();
     var user_ID = $('[name="deny_user_id"]').val();
     $.ajax({
       type : "POST",
-      url  : "<?=base_url()?>posts/not_accept_post",
+      url  : "<?=base_url()?>posts/deny_post",
       dataType : "JSON",
       data : {post_ID:post_ID, user_ID:user_ID},
       success: function(data){

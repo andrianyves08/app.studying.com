@@ -4,6 +4,13 @@
         $this->load->database();
     }
 
+    public function get_review_status(){
+		$this->db->select('review_post_status');
+		$query = $this->db->get_where('settings', array('id' => '1'));
+
+		return $query->row_array();
+	}
+
     public function get_posts($limit, $start, $id = FALSE){
     	$this->db->select('users.first_name as first_name, users.last_name as last_name, users.image as image, users_posts.id as post_ID, users.id as user_ID, users_posts.status as post_status, users_posts.timestamp as timestamp, users_posts.posts as posts, users_posts.image as post_image');
     	$this->db->join('users', 'users.id = users_posts.user_ID', 'left');
@@ -43,14 +50,20 @@
 
 	public function create($image, $posts, $user_ID){
 		$this->db->trans_begin();
-		$this->db->cache_delete('home', 'index');
-		$this->db->cache_delete('default', 'index');
+
+		$sql = $this->get_review_status();
+
+		if($sql['review_post_status'] == 0){
+			$status = 1;
+		} else {
+			$status = 0;
+		}
 
 		$data = array(
 			'user_ID' => $user_ID,
 			'posts' => $posts,
 			'image' => $image,
-			'status' => 0,
+			'status' => $status,
 		);
 		$this->db->insert('users_posts', $data);
 
@@ -65,8 +78,6 @@
 
 	public function add_comments($image, $post_ID, $comment, $comment_ID, $owner_ID, $user_ID){
 		$this->db->trans_begin();
-		$this->db->cache_delete('home', 'index');
-		$this->db->cache_delete('default', 'index');
 
 		$query = $this->db->get_where('users_posts',array('id'=>$post_ID));
 		
@@ -112,7 +123,6 @@
 						'owner' => $owner_ID
 					);
 				}
-				
 				$this->db->insert('users_notifications', $data1);
 			}
 		}
@@ -160,8 +170,6 @@
 
 	public function like_post($post_ID, $owner_ID, $user_ID){
 		$this->db->trans_begin();
-		$this->db->cache_delete('home', 'index');
-		$this->db->cache_delete('default', 'index');
 
 		$data = array(
 			'post_ID' => $post_ID,
@@ -194,8 +202,6 @@
 
 	public function like_comment($comment_ID, $user_ID){
 		$this->db->trans_begin();
-		$this->db->cache_delete('home', 'index');
-		$this->db->cache_delete('default', 'index');
 
 		$data = array(
 			'comment_ID' => $comment_ID,
@@ -221,22 +227,16 @@
 	}
 
 	public function delete_post($post_ID){
-		$this->db->cache_delete('home', 'index');
-		$this->db->cache_delete('default', 'index');
 		$this->db->delete('users_posts', array('id' => $post_ID));
 	}
 
 	public function delete_comment($comment_ID){
-		$this->db->cache_delete('home', 'index');
-		$this->db->cache_delete('default', 'index');
 		$this->db->delete('users_posts_comments', array('id' => $comment_ID));
 		$this->db->delete('users_posts_comments', array('parent_comment' => $comment_ID));
 	}
 
 	public function approve_post($post_ID, $user_ID){
 		$this->db->trans_begin();
-		$this->db->cache_delete('home', 'index');
-		$this->db->cache_delete('default', 'index');
 
 		$this->db->set('status', '1');
 		$this->db->where('id', $post_ID);
@@ -266,14 +266,11 @@
 		}
 	}
 
-	public function not_accept_post($post_ID, $user_ID){
+	public function deny_post($post_ID, $user_ID){
 		$this->db->trans_begin();
-		$this->db->cache_delete('home', 'index');
-		$this->db->cache_delete('default', 'index');
 
 		$this->db->set('status', '2');
 		$this->db->where('id', $post_ID);
-
 		$this->db->update('users_posts');
 
 		// approve/disapparove post
@@ -281,7 +278,7 @@
 		// liked
 		// replied
 		$data1 = array(
-			'type' => 5,
+			'type' => 6,
 			'post_ID' => $post_ID,
 			'owner' => $user_ID,
 		);
@@ -314,8 +311,6 @@
 
 	public function seen($user_ID){
 		$this->db->trans_begin();
-		$this->db->cache_delete('home', 'index');
-		$this->db->cache_delete('default', 'index');
 
 		$this->db->set('status', '1');
 		$this->db->where('owner', $user_ID);

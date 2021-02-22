@@ -163,7 +163,7 @@
               <div class="view overlay">
                 <?php foreach ($images as $image) {
                   if($image['product_ID'] == $product['id']){ ?>
-                <img class="card-img-top chat-mes-id-3" src="<?php echo base_url(); ?>assets/img/products/<?php echo $product['slug'].'/'.$image['image']; ?>"
+                <img class="card-img-top chat-mes-id-3" src="<?php echo base_url(); ?>assets/img/rated-products/<?php echo $product['slug'].'/'.$image['image']; ?>"
                   alt="Card image cap">
                 <a href="#!">
                   <div class="mask rgba-white-slight"></div>
@@ -251,7 +251,7 @@ $(document).ready(function(){
     var product_name = $(this).data('product-name');
     $.ajax({
       type : "POST",
-      url  : "<?=base_url()?>products/get_images",
+      url  : "<?=base_url()?>rate_products/get_images",
       dataType : "JSON",
       data : {id:product_ID},
       success: function(data){
@@ -259,9 +259,9 @@ $(document).ready(function(){
         var i;
         for(i=0; i<data.length; i++){
           if(i == 0){
-            html += '<a rel="gallery-1" href="<?php echo base_url(); ?>assets/img/products/'+product_slug+'/'+data[i].image+'" class="swipebox"><img src="<?php echo base_url(); ?>/assets/img/products/'+product_slug+'/'+data[i].image+'" class="img-fluid img-thumbnail"></a><div class="d-flex">';
+            html += '<a rel="gallery-1" href="<?php echo base_url(); ?>assets/img/rate-products/'+product_slug+'/'+data[i].image+'" class="swipebox"><img src="<?php echo base_url(); ?>/assets/img/rate-products/'+product_slug+'/'+data[i].image+'" class="img-fluid img-thumbnail"></a><div class="d-flex">';
           } else {
-            html += '<a rel="gallery-1" href="<?php echo base_url(); ?>assets/img/products/'+product_slug+'/'+data[i].image+'" class="swipebox"><img src="<?php echo base_url(); ?>/assets/img/products/'+product_slug+'/'+data[i].image+'" class="img-fluid img-thumbnail" style="width: 200px;"></a>';
+            html += '<a rel="gallery-1" href="<?php echo base_url(); ?>assets/img/rate-products/'+product_slug+'/'+data[i].image+'" class="swipebox"><img src="<?php echo base_url(); ?>/assets/img/rate-products/'+product_slug+'/'+data[i].image+'" class="img-fluid img-thumbnail" style="width: 200px;"></a>';
           }
           if((i + 1) == (data.length)){
             html += '</div>';
@@ -274,7 +274,7 @@ $(document).ready(function(){
     });
     $.ajax({
       type : "POST",
-      url  : "<?=base_url()?>products/get_product_categories",
+      url  : "<?=base_url()?>rate_products/get_product_categories",
       dataType : "JSON",
       data : {id:product_ID},
       success: function(data){
@@ -297,7 +297,7 @@ $(document).ready(function(){
   var category_slug = '<?php echo $category_slug; ?>';
   $(document).on("click", ".load_more", function() { 
     $.ajax({
-        url: "<?=base_url()?>products/load_more",
+        url: "<?=base_url()?>rate_products/load_more",
         type: 'post',
         data: {start:start, category_slug:category_slug},
         beforeSend:function(){
@@ -321,13 +321,13 @@ $(document).ready(function(){
       var aliexpress_cost = Number($('#aliexpress_cost').val());  
       var average_shipping = Number($('#average_shipping').val());  
       var shipping_cost = Number($('#shipping_cost').val());
-      //if(aliexpress_cost <= 10){
-        var min_price = (aliexpress_cost+average_shipping) - (shipping_cost + 15);
+      // if(aliexpress_cost <= 10){
+        var min_price = (aliexpress_cost+average_shipping - shipping_cost) + 15;
         var max_price = min_price + 5;
       // } else if(aliexpress_cost >= 10 && aliexpress_cost <= 15){
       //   var min_price = (aliexpress_cost+average_shipping) - (shipping_cost + 17);
       // } else if(aliexpress_cost >= 15 && aliexpress_cost <= 20){
-       // } else if(aliexpress_cost >= 20 && aliexpress_cost <= 30){
+      //  } else if(aliexpress_cost >= 20 && aliexpress_cost <= 30){
       //   var min_price = (aliexpress_cost+average_shipping) - (shipping_cost + 35);
       // } else if(aliexpress_cost >= 30){
       //   var min_price = (aliexpress_cost+average_shipping) - (shipping_cost + (aliexpress_cost*2));

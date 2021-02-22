@@ -9,7 +9,7 @@
             <button data-toggle="modal" data-target="#create_group" class="btn btn-unique btn-sm m-0" type="button">Create a group</button>
           </div>
         </div>
-        <div class="card wide overflow-auto" id="my_friends">
+        <div class="card wide overflow-auto" id="my_friends" style="height: 600px;">
         </div><!-- Card -->
       </div> <!--Column-->
       <div class="col-md-8">
@@ -165,6 +165,30 @@ $(document).ready(function(){
       }
     });
   }
+
+  $(document).on('click', '.replay', function(){
+    var chat_ID = $(this).data('message-id');
+    var messages = $(".chat_texts_"+chat_ID).text();
+    $(".replying").text(messages);
+    $(".send").data("chat-id", chat_ID);
+    $(".send").attr("data-chat-id", chat_ID);
+    $(".clear_replay").show();
+  });
+
+  $(document).on('click', '.group_replay', function(){
+    var chat_ID = $(this).data('message-id');
+    var messages = $(".chat_texts_"+chat_ID).text();
+    $(".replying").text(messages);
+    $(".group_send").data("chat-id", chat_ID);
+    $(".group_send").attr("data-chat-id", chat_ID);
+    $(".clear_replay").show();
+  });
+
+  $(document).on('click', '.clear_replay', function(){
+    $(".replying").text('');
+    $(".clear_replay").hide();
+  });
+
   //Create Message
   $('#createamessage').on('click',function(){
     var email=$('#email').val();
@@ -204,23 +228,30 @@ $(document).ready(function(){
   });
 
   $(document).on('click', '.viewmore', function(){
-    $('.viewmore').html("Loading...");  
-    var to_user_id = $(this).data('data_chat_');
+    var to_user_id = $(this).data('user-id');
     limit = limit + 10;
     $.ajax({
       method  : 'post',
       url   : "<?=base_url()?>messages/get_messages",
       dataType : 'json',
       async : true,
-      data:{limit:limit},
-      success : function(data){
-        fetch_user_chat_history(to_user_id);
+      data:{user_ID:to_user_id, limit:limit},
+      beforeSend:function(){
+        $(".viewmore").text("Loading...");
+      },
+      success: function(data){
+        $('#chat-messages_'+to_user_id).html(data);
+        $(".viewmore").text("View More");
+        if(!$.trim(data)) {
+          $(".viewmore").hide();
+        }
       }
     });
   });
 
   $(document).on('click', '.send', function(){
     var to_user_id = $(this).data('sender-id');
+    var chat_ID = $(this).data('chat-id');
     var message = $('#message').val();
     if(message != ''){
       $.ajax({
@@ -228,11 +259,15 @@ $(document).ready(function(){
         method:"POST",
         async : true,
         dataType : 'json',
-        data:{user_ID:to_user_id, chat_message:message},
+        data:{user_ID:to_user_id, chat_message:message, chat_ID:chat_ID},
         success:function(data) {
           toastr.success(' 10 Exp Gained!');
           $('[name="message"]').val("");
           fetch_user_chat_history(to_user_id);
+          fetch_user();
+          $(".replying").text('');
+          $(".clear_replay").hide();
+          $(this).data("chat-id", '0');
         }
       })
     } else {
@@ -241,9 +276,9 @@ $(document).ready(function(){
   });
    
   function make_chat_dialog_box(to_user_id, first_name, last_name) {
-    var message_content = '<div class="card-header white d-flex justify-content-between p-2 fixed"><div class="heading d-flex justify-content-start"><div class="data"><p class="name mb-0"><strong>'+first_name+' '+last_name+'</strong></p></div></div><div class="icons grey-text"><a class="feature"></a></div></div><div class="my-custom-scrollbar overflow-auto p-3"><a><p class="text-center blue-text font-italic viewmore" id="data_chat_'+to_user_id+'">View More</p></a><div class="chat-messages" id="chat-messages_'+to_user_id+'" data-touserid="'+to_user_id+'">';
+    var message_content = '<div class="card-header white d-flex justify-content-between p-2 fixed"><div class="heading d-flex justify-content-start"><div class="data"><p class="name mb-0"><strong>'+first_name+' '+last_name+'</strong></p></div></div><div class="icons grey-text"><a class="feature"></a></div></div><div class="my-custom-scrollbar overflow-auto p-3"><a><p class="text-center blue-text font-italic viewmore" data-user-id="'+to_user_id+'">View More</p></a><div class="chat-messages" id="chat-messages_'+to_user_id+'" data-touserid="'+to_user_id+'">';
     fetch_user_chat_history(to_user_id);
-    message_content += '</div></div><div class="card-footer text-muted white pt-1 pb-2 px-3 d-flex" style="margin-top: auto;"><textarea type="text" class="form-control" placeholder="Type a message..." name="message" id="message"></textarea><button class="btn btn-primary btn-sm send" data-sender-id="'+to_user_id+'" >Send</button></div>';
+    message_content += '</div></div><div class="card-footer text-muted white pt-1 pb-2 px-3" style="margin-top: auto;"><div class="d-flex justify-content-center"><div class="replying"></div><a class="clear_replay font-weight-bold red-text ml-5" style="display: none;">X</a></div><div class="d-flex"><textarea type="text" class="form-control" placeholder="Type a message..." name="message" id="message"></textarea><button class="btn btn-primary btn-sm send" data-sender-id="'+to_user_id+'" data-chat-id="0">Send</button></div></div>';
     $('#messages').html(message_content);
   }
 
@@ -257,8 +292,29 @@ $(document).ready(function(){
       success : function(data){
         $('#chat-messages_'+to_user_id).html(data);
       }
-   });
+    });
   }
+
+  $(document).on('click', '.group_view_more', function(){
+    var group_ID = $(this).data('group-id');
+    limit = limit + 10;
+    $.ajax({
+      method  : 'post',
+      url   : "<?=base_url()?>messages/get_group_messages",
+      dataType : 'json',
+      data:{group_ID:group_ID, limit:limit},
+      beforeSend:function(){
+        $(".group_view_more").text("Loading...");
+      },
+      success : function(data){
+         $('#chat_group_messages_'+group_ID).html(data);
+         $(".group_view_more").text("View More");
+        if(!$.trim(data)) {
+          $(".group_view_more").hide();
+        }
+      }
+    });
+  });
 
   function update_chat_history_data(){
     $('.chat-messages').each(function(){
@@ -272,7 +328,7 @@ $(document).ready(function(){
     if(confirm("Are you sure you want to remove this chat?")){
       $.ajax({
         type : "POST",
-         url  : "<?=base_url()?>messages/delete_message",
+        url  : "<?=base_url()?>messages/delete_message",
         dataType : "JSON",
         async : true,
         data : {chat:del},
@@ -287,17 +343,21 @@ $(document).ready(function(){
   $(document).on('click', '.group_send', function(){
     var group_ID = $(this).attr('id');
     var message = $('#group_message').val();
+    var chat_ID = $(this).data('chat-id');
     if(message != ''){
       $.ajax({
         url:"<?=base_url()?>messages/send_group_message",
         method:"POST",
         async : true,
         dataType : 'json',
-        data:{group_ID:group_ID, chat_message:message},
+        data:{group_ID:group_ID, chat_message:message, chat_ID:chat_ID},
         success:function(data) {
           toastr.success(' 10 Exp Gained!');
           $('[name="group_message"]').val("");
-          fetch_group_chat_history(group_ID);;
+          fetch_group_chat_history(group_ID);
+          $(".replying").text('');
+          $(".clear_replay").hide();
+          $(this).data("chat-id", '0');
         }
       })
     } else {
@@ -306,9 +366,9 @@ $(document).ready(function(){
   });
 
   function make_group_chat_dialog_box(group_ID, group_name) {
-    var group_message_content = '<div class="card-header white d-flex justify-content-between p-2 fixed"><div class="heading d-flex justify-content-start"><div class="data"><p class="name mb-0"><strong>'+group_name+'</strong></p></div></div><div class="icons grey-text"><a class="add_new_member" id="'+group_ID+'"><i class="fas fa-user-plus mr-2"></i></a><a class="show_list" id="'+group_ID+'"><i class="fas fa-users mr-2"></i></a></div></div><div class="my-custom-scrollbar overflow-auto p-3"><div class="chat_group_messages" id="chat_group_messages_'+group_ID+'" data-togroupid="'+group_ID+'">';
+    var group_message_content = '<div class="card-header white d-flex justify-content-between p-2 fixed"><div class="heading d-flex justify-content-start"><div class="data"><p class="name mb-0"><strong>'+group_name+'</strong></p></div></div><div class="icons grey-text"><a class="add_new_member" id="'+group_ID+'"><i class="fas fa-user-plus mr-2"></i></a><a class="show_list" id="'+group_ID+'"><i class="fas fa-users mr-2"></i></a></div></div><div class="my-custom-scrollbar overflow-auto p-3"><a><p class="text-center blue-text font-italic group_view_more" data-group-id="'+group_ID+'">View More</p></a><div class="chat_group_messages" id="chat_group_messages_'+group_ID+'" data-group-id="'+group_ID+'">';
     fetch_group_chat_history(group_ID);
-    group_message_content += '</div></div><div class="card-footer text-muted white pt-1 pb-2 px-3 d-flex" style="margin-top: auto;"><textarea type="text" class="form-control" placeholder="Type a message..." name="group_message" id="group_message"></textarea><button class="btn btn-primary btn-sm group_send" id="'+group_ID+'" >Send</button></div>';
+    group_message_content += '</div></div><div class="card-footer text-muted white pt-1 pb-2 px-3" style="margin-top: auto;"><div class="d-flex justify-content-center"><div class="replying"></div><a class="clear_replay font-weight-bold red-text ml-5" style="display: none;">X</a></div><div class="d-flex"><textarea type="text" class="form-control" placeholder="Type a message..." name="group_message" id="group_message"></textarea><button class="btn btn-primary btn-sm group_send" id="'+group_ID+'" data-chat-id="0">Send</button></div></div>';
     $('#messages').html(group_message_content);
   }
 
@@ -338,7 +398,7 @@ $(document).ready(function(){
 
   function update_group_chat_history_data(){
     $('.chat_group_messages').each(function(){
-      var group_ID = $(this).data('togroupid');
+      var group_ID = $(this).data('group-id');
       fetch_group_chat_history(group_ID);
     });
   }

@@ -3,7 +3,7 @@
   <section class="card wow fadeIn mb-4" style="background-image: url(<?php echo base_url();?>assets/img/bg4.jpg);background-attachment: fixed; background-position: center; background-repeat: no-repeat; background-size: cover; height: 300px;">
     <div class="card-body text-white text-center py-5 px-5 my-5">
       <h1 class="mb-4">
-        <strong>Rated Products</strong>
+        <strong>Tools</strong>
       </h1>
     </div>
   </section>
@@ -25,7 +25,7 @@
           <div class="form-group">
             <label for="shipping_cost">Your Shipping Cost</label>
             <input type="number" class="form-control pricing_calculator" id="shipping_cost">
-          </div>
+          </div> 
           <div class="form-group">
             <label for="price">Minimum Price</label>
             <input type="number" class="form-control" id="min_price" disabled>
@@ -56,11 +56,10 @@
         </div>
       </div><!--Column-->
     </div><!--Grid row-->
-<!--   -->
     <div class="row justify-content-center">
       <div class="col-lg-8">
         <h2 class="mb-4 text-center">
-          <strong>Rated Products Tools</strong>
+          <strong>Rated Products Library</strong>
         </h2>
         <nav class="navbar navbar-expand-lg navbar-dark mt-3 mb-4">
           <span class="navbar-brand text-dark">Categories:</span>
@@ -71,7 +70,7 @@
           <div class="collapse navbar-collapse" id="basicExampleNav">
             <ul class="navbar-nav mr-auto">
               <li class="nav-item">
-                <a class="nav-link waves-effect text-dark" href="<?php base_url();?><?php if(!empty($category_slug)){ echo 'all'; }else{ echo 'rated-products'; } ?>">
+                <a class="nav-link waves-effect text-dark" href="<?php base_url();?><?php if(!empty($category_slug)){ echo 'all'; }else{ echo 'tools'; } ?>">
                  <strong>All</strong>
                 </a>
               </li>
@@ -87,16 +86,11 @@
                 </a>
                 <div class="dropdown-menu dropdown-menu-right dropdown-default" aria-labelledby="category" id="dropdown_category">
                   <?php foreach($categories as $category){ ?>
-                  <a class="dropdown-item waves-effect waves-light" href="<?php echo base_url().'rated-products/'.$category['slug']; ?>"><?php echo $category['name']; ?></a>
+                  <a class="dropdown-item waves-effect waves-light" href="<?php echo base_url().'tools/'.$category['slug']; ?>"><?php echo $category['name']; ?></a>
                 <?php } ?>
                 </div>
               </li>
             </ul>
-<!--             <form class="form-inline">
-              <div class="md-form my-0">
-                <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
-              </div>
-            </form> -->
           </div>
         </nav>
         <div class="row">
@@ -109,7 +103,7 @@
               <div class="view overlay">
                 <?php foreach ($images as $image) {
                   if($image['product_ID'] == $product['id']){ ?>
-                <img class="card-img-top chat-mes-id-3" src="<?php echo base_url(); ?>assets/img/products/<?php echo $product['slug'].'/'.$image['image']; ?>"
+                <img class="card-img-top chat-mes-id-3" src="<?php echo base_url(); ?>assets/img/rated-products/<?php echo $product['slug'].'/'.$image['image']; ?>"
                   alt="Card image cap">
                 <a href="#!">
                   <div class="mask rgba-white-slight"></div>
@@ -141,12 +135,12 @@
           <?php } } } ?>
            <?php } else { ?>
           <?php foreach ($products as $product) { ?>
-          <div class="col-lg-3 col-md-4 col-sm-6 products"> 
+          <div class="col-lg-3 col-md-3 col-sm-6 products"> 
             <div class="card text-center mb-4">
               <div class="view overlay">
                 <?php foreach ($images as $image) {
                   if($image['product_ID'] == $product['id']){ ?>
-                <img class="card-img-top chat-mes-id-3" src="<?php echo base_url(); ?>assets/img/products/<?php echo $product['slug'].'/'.$image['image']; ?>"
+                <img class="card-img-top chat-mes-id-3" src="<?php echo base_url(); ?>assets/img/rated-products/<?php echo $product['slug'].'/'.$image['image']; ?>"
                   alt="Card image cap">
                 <a href="#!">
                   <div class="mask rgba-white-slight"></div>
@@ -234,7 +228,7 @@ $(document).ready(function(){
     var product_name = $(this).data('product-name');
     $.ajax({
       type : "POST",
-      url  : "<?=base_url()?>products/get_images",
+      url  : "<?=base_url()?>rated_products/get_images",
       dataType : "JSON",
       data : {id:product_ID},
       success: function(data){
@@ -242,9 +236,9 @@ $(document).ready(function(){
         var i;
         for(i=0; i<data.length; i++){
           if(i == 0){
-            html += '<a rel="gallery-1" href="<?php echo base_url(); ?>assets/img/products/'+product_slug+'/'+data[i].image+'" class="swipebox"><img src="<?php echo base_url(); ?>/assets/img/products/'+product_slug+'/'+data[i].image+'" class="img-fluid img-thumbnail"></a><div class="d-flex">';
+            html += '<a rel="gallery-1" href="<?php echo base_url(); ?>assets/img/rated-products/'+product_slug+'/'+data[i].image+'" class="swipebox"><img src="<?php echo base_url(); ?>assets/img/rated-products/'+product_slug+'/'+data[i].image+'" class="img-fluid img-thumbnail"></a><div class="d-flex">';
           } else {
-            html += '<a rel="gallery-1" href="<?php echo base_url(); ?>assets/img/products/'+product_slug+'/'+data[i].image+'" class="swipebox"><img src="<?php echo base_url(); ?>/assets/img/products/'+product_slug+'/'+data[i].image+'" class="img-fluid img-thumbnail" style="width: 200px;"></a>';
+            html += '<a rel="gallery-1" href="<?php echo base_url(); ?>assets/img/rated-products/'+product_slug+'/'+data[i].image+'" class="swipebox"><img src="<?php echo base_url(); ?>assets/img/rated-products/'+product_slug+'/'+data[i].image+'" class="img-fluid img-thumbnail" style="width: 200px;"></a>';
           }
           if((i + 1) == (data.length)){
             html += '</div>';
@@ -257,14 +251,14 @@ $(document).ready(function(){
     });
     $.ajax({
       type : "POST",
-      url  : "<?=base_url()?>products/get_product_categories",
+      url  : "<?=base_url()?>rated_products/get_product_categories",
       dataType : "JSON",
       data : {id:product_ID},
       success: function(data){
         var html = '';
         var i;
         for(i=0; i<data.length; i++){
-          html += '<a href="<?php echo base_url().'rated-products';?>/'+data[i].slug+'" <span class="badge badge-default badge-pill ml-2"><i class="fas fa-tag text-white" aria-hidden="true"></i> '+data[i].name+'</span></a>';
+          html += '<a href="<?php echo base_url().'tools';?>/'+data[i].slug+'" <span class="badge badge-default badge-pill ml-2"><i class="fas fa-tag text-white" aria-hidden="true"></i> '+data[i].name+'</span></a>';
         }
         $('#product_categories').html(html);
       }
@@ -280,7 +274,7 @@ $(document).ready(function(){
   var category_slug = '<?php echo $category_slug; ?>';
   $(document).on("click", ".load_more", function() { 
     $.ajax({
-        url: "<?=base_url()?>products/load_more",
+        url: "<?=base_url()?>rated_products/load_more",
         type: 'post',
         data: {start:start, category_slug:category_slug},
         beforeSend:function(){
@@ -304,17 +298,22 @@ $(document).ready(function(){
       var aliexpress_cost = Number($('#aliexpress_cost').val());  
       var average_shipping = Number($('#average_shipping').val());  
       var shipping_cost = Number($('#shipping_cost').val());
-      //if(aliexpress_cost <= 10){
-        var min_price = (aliexpress_cost+average_shipping) - (shipping_cost + 15);
+      if(aliexpress_cost <= 10){
+        var min_price = (aliexpress_cost+average_shipping - shipping_cost) + 14;
         var max_price = min_price + 5;
-      // } else if(aliexpress_cost >= 10 && aliexpress_cost <= 15){
-      //   var min_price = (aliexpress_cost+average_shipping) - (shipping_cost + 17);
-      // } else if(aliexpress_cost >= 15 && aliexpress_cost <= 20){
-       // } else if(aliexpress_cost >= 20 && aliexpress_cost <= 30){
-      //   var min_price = (aliexpress_cost+average_shipping) - (shipping_cost + 35);
-      // } else if(aliexpress_cost >= 30){
-      //   var min_price = (aliexpress_cost+average_shipping) - (shipping_cost + (aliexpress_cost*2));
-      // }
+      } else if(aliexpress_cost >= 11 && aliexpress_cost <= 15){
+        var min_price = (aliexpress_cost+average_shipping - shipping_cost) + 16;
+        var max_price = min_price + 5;
+      } else if(aliexpress_cost >= 16 && aliexpress_cost <= 20){
+        var min_price = (aliexpress_cost+average_shipping - shipping_cost) + 19;
+        var max_price = min_price + 10;
+      } else if(aliexpress_cost >= 21 && aliexpress_cost <= 30){
+        var min_price = (aliexpress_cost+average_shipping - shipping_cost) + 24;
+        var max_price = min_price + 10;
+      } else if(aliexpress_cost > 30){
+        var min_price = (aliexpress_cost+average_shipping - shipping_cost) + (aliexpress_cost);
+        var max_price = min_price;
+      }
       $('#min_price').val(parseFloat(min_price));
       $('#max_price').val(parseFloat(max_price));
   }); 

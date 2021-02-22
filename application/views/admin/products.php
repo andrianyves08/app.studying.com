@@ -5,7 +5,7 @@
       <h4 class="mb-2 mb-sm-0 pt-1">
         <span><a href="<?php echo base_url();?>admin">Home</a></span>
         <span>/</span>
-        <span>Rated Products</span>
+        <span>Products</span>
       </h4>
     </div>
   </div>
@@ -15,37 +15,36 @@
         <div class="card-body">
           <table class="table table-bordered table-responsive-md" cellspacing="0" width="100%">
             <thead>
+            <th>ID</th>
             <th>Name</th>
             <th>Description</th>
-            <th>Rating</th>
+            <th>Price</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Last Modified</th>
             <th></th>
             </thead>
-            <tbody id="sortablecourses">
+            <tbody>
             <?php foreach ($products as $product) {?>
               <tr>
-                <td><?php echo ucwords($product['name']);?></td>
+                <td><?php echo $product['product_ID'];?></td>
+                <td><?php echo ucwords($product['product_name']);?></td>
                 <td><?php echo ucfirst($product['description']);?></td>
+                <td><?php echo $product['price'];?></td>
+                <td><?php echo ucfirst($product['type_name']);?></td>
+                <td><?php echo date("F d, Y h:i A", strtotime($product['date_modified']));?></td>
                 <td>
-                <?php 
-                  $output = '';
-                  if($product['rating'] == 0){
-                    $output .='<i class="far fa-star amber-text"></i>';
-                  } else {
-                    $i = 0;
-                    while($product['rating'] > $i){
-                      $output .='<i class="fas fa-star amber-text"></i>';
-                      $i++;
-                    }
-                  }
-                   echo $output;
-                ?>
+                  <?php if($product['status'] == '1'){?>
+                    <span class="badge badge-pill badge-success">Active</span>
+                  <?php } else { ?>
+                    <span class="badge badge-pill badge-warning">Inactive</span>
+                  <?php } ?>
                 </td>
                 <td>
                   <div class="input-group mb-3">
                     <div class="input-group-prepend">
-                      <a class="btn btn-sm btn-success view_image" data-product-id="<?php echo $product['id'];?>" data-product-slug="<?php echo $product['slug'];?>">View Image</a>
-                      <a class="btn btn-sm btn-primary" href='<?php echo base_url(); ?>admin/products/<?php echo $product['id'];?>'>Edit</a>
-                      <a class="btn btn-sm btn-danger delete_product" data-product-id="<?php echo $product['id'];?>">Delete</a>
+                      <a class="btn btn-sm btn-primary" href='<?php echo base_url(); ?>admin/products/<?php echo $product['product_ID'];?>'>Edit</a>
+                      <a class="btn btn-sm btn-success edit_status" data-product-id="<?php echo $product['product_ID'];?>" data-status="<?php echo $product['status'];?>">Change Status</a>
                     </div>
                   </div>
                 </td>
@@ -53,7 +52,7 @@
             <?php } ?>
             </tbody>
           </table>
-          <a type="button" class="btn btn-primary" data-toggle="modal" data-target="#createlesson">Create Rated Product</a>
+          <a type="button" class="btn btn-primary" data-toggle="modal" data-target="#createlesson">Create Product</a>
         </div><!--Card Body-->
       </div><!--Card-->
     </div><!--Column-->
@@ -63,10 +62,10 @@
 <!-- Create Product -->
 <div class="modal fade" id="createlesson" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
   aria-hidden="true">
-  <div class="modal-dialog modal-notify modal-info" role="document">
+  <div class="modal-dialog modal-notify modal-info modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <p class="heading lead">Create Procucts</p>
+        <p class="heading lead">Create Products</p>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true" class="white-text">&times;</span>
         </button>
@@ -78,30 +77,40 @@
           <input type="text" class="form-control" name="name" required>
         </div>
         <div class="form-group">
-          <label for="formGroupExampleInput">* Description</label>
-          <input type="text" class="form-control" name="description" required>
+          <label for="exampleFormControlTextarea2">Description</label>
+          <textarea class="form-control rounded-0" name="description" id="description" rows="3"></textarea>
         </div>
         <div class="form-group">
-          <label for="formGroupExampleInput">* Rating</label>
-          <input type="number" class="form-control" name="rating" min="0" max="10" required>
+          <label for="formGroupExampleInput">* Price</label>
+          <input type="number" class="form-control" name="price" min="0" step="0.01"  max="1000000" required>
         </div>
+        <label for="formGroupExampleInput">* Type</label>
+        <select class="browser-default custom-select mb-4" id="type" name="type" required>
+          <option disabled selected>Choose Type</option>
+          <?php foreach ($types as $type) { ?>
+            <option value="<?php echo $type['id']; ?>"><?php echo ucwords($type['name']); ?></option>
+          <?php } ?>
+        </select>
         <label for="formGroupExampleInput">* Category</label>
-        <div class="input-group mb-4">
-          <select class="browser-default custom-select" id="select_category" name="category[]" required>
+        <div class="input-group mb-4" style="width: 100%;">
+          <select class="browser-default custom-select select2" name="category[]" id="category" multiple="multiple" data-placeholder="Select a Category" required style="width: 70%;">
           </select>
           <div class="input-group-append">
-            <a class="btn btn-md btn-outline-primary m-0 px-3 py-2 z-depth-0 waves-effect" type="button" data-toggle="modal" data-target="#create_category">Create New Category</a>
+            <a class="btn btn-md btn-outline-primary m-0 px-3 py-2 waves-effect" type="button" data-toggle="modal" data-target="#create_category">Create New Category</a>
           </div>
         </div>
-        <label for="formGroupExampleInput">* Sub Category</label>
-        <div class="form-group mb-4">
-          <select class="browser-default custom-select select2" name="category[]" id="select_sub_category" multiple="multiple" data-placeholder="Select sub category" required style="width: 100%"></select>
-        </div>
-        <label for="image">* Upload Photos</label>
+        <label for="image">* Main image</label>
         <div class="input-group mb-4">
           <div class="custom-file">
-            <input type="file" class="custom-file-input" name="photos[]" aria-describedby="inputGroupFileAddon01" multiple required>
-            <label class="custom-file-label text-left" for="photos"></label>
+            <input type="file" class="custom-file-input" name="image" aria-describedby="inputGroupFileAddon01" required>
+            <label class="custom-file-label text-left" for="image"></label>
+          </div>
+        </div>
+        <label for="image">Other images</label>
+        <div class="input-group mb-4">
+          <div class="custom-file">
+            <input type="file" class="custom-file-input" name="images[]" aria-describedby="inputGroupFileAddon01" multiple>
+            <label class="custom-file-label text-left" for="images"></label>
           </div>
         </div>
       </div>
@@ -114,29 +123,6 @@
   </div>
 </div>
 <!-- Create Product-->
-<!-- View Image -->
-<div class="modal fade" id="product_images" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-  aria-hidden="true">
-  <div class="modal-dialog modal-notify modal-info" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <p class="heading lead">View Images</p>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true" class="white-text">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-      
-        <div class="d-grid mdb-lightbox" id="image_list">
-        </div>
-      </div>
-      <div class="modal-footer justify-content-center">
-        <a type="button" class="btn btn-danger waves-effect" data-dismiss="modal">Close</a>
-      </div>
-    </div>
-  </div>
-</div>
-<!-- View Image-->
 <!-- Create Category-->
 <div data-backdrop="static" class="modal fade" id="create_category" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
   aria-hidden="true">
@@ -154,14 +140,12 @@
           <input type="text" class="form-control" name="new_category" id="new_category">
         </div>
         <label for="formGroupExampleInput">* Type</label>
-        <div class="custom-control custom-radio">
-          <input type="radio" class="custom-control-input category_type" id="main_category" name="type" value="1">
-          <label class="custom-control-label" for="main_category">Main Category</label>
-        </div>
-        <div class="custom-control custom-radio">
-          <input type="radio" class="custom-control-input category_type" id="sub_category" name="type" value="2">
-          <label class="custom-control-label" for="sub_category">Sub Category</label>
-        </div>
+        <?php foreach ($types as $type) { ?>
+          <div class="custom-control custom-radio">
+            <input type="radio" class="custom-control-input category_type" id="category_type_<?php echo $type['id']; ?>" name="category_type" value="<?php echo $type['id']; ?>">
+            <label class="custom-control-label" for="category_type_<?php echo $type['id']; ?>"><?php echo ucwords($type['name']); ?></label>
+          </div>
+        <?php } ?>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
@@ -171,117 +155,120 @@
   </div>
 </div>
 <!-- Create Category-->
-<!-- Product Delete -->
-<div data-backdrop="static" class="modal fade" id="product_delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+<!-- Change Status -->
+<div data-backdrop="static" class="modal fade" id="status_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
   aria-hidden="true">
-  <div class="modal-dialog modal-sm modal-notify modal-danger" role="document">
+  <div class="modal-dialog modal-sm modal-notify modal-info" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title w-100" id="myModalLabel">Delete Product</h4>
+        <h4 class="modal-title w-100" id="myModalLabel">Edit Status</h4>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body">
-        <p>Are you sure you want to delete this product?</p>
-        <input type="hidden" class="form-control" name="product_ID" id="product_ID">
+        <input type="hidden" id="product_ID" name="product_ID">
+        <label for="editstatus">* Status</label><br>
+        <div class="custom-control custom-switch">
+          <input type="checkbox" class="custom-control-input" id="status" value="0">
+          <label class="custom-control-label" for="status" id="status_label">Inactive</label>
+        </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary btn-sm" data-target="#product_delete" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary btn-sm" id="confirm_delete_product">Confirm</button>
+        <button type="button" class="btn btn-secondary btn-sm" data-target="#status" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary btn-sm" id="confirm_status">Confirm</button>
       </div>
     </div>
   </div>
 </div>
-<!-- Product Delete -->
+<!-- Change Status -->
 <script>
 $(document).ready(function(){
-  get_category();
-  function get_category(){
-    $.ajax({
-      type  : 'POST',
-      url   : "<?=base_url()?>products/get_category",
-      async : true,
-      dataType : 'json',
-      success : function(data){
-        var html = '';
-        var html2 = '';
-        var i;
-        for(i=0; i<data.length; i++){
-          if(data[i].type == 1){
-            html += '<option value='+data[i].id+'>'+data[i].name+'</option>';
-          } else {
-            html2 += '<option value='+data[i].id+'>'+data[i].name+'</option>';
-          }
-        }
-        $('#select_category').html(html);
-        $('#select_sub_category').html(html2);
-      }
-    });
-  }
-
-  $(document).on("click", ".delete_product", function() { 
-    var id=$(this).data('product-id');
-    $('#product_delete').modal('show');
-    $('[name="product_ID"]').val(id);
+  //Change category based on type
+  $('#type').change(function(){ 
+    var type_ID=$(this).val();
+    get_category(type_ID);
   });
 
-  $("#confirm_delete_product").on('click',function(){
-    var product_ID = $('#product_ID').val();
-    $.ajax({
-      type : "POST",
-      url  : "<?=base_url()?>products/delete",
-      dataType : "JSON",
-      data : {id:product_ID},
+  function get_category(type_ID){
+   $.ajax({
+      url : "<?=base_url()?>products/get_categories",
+      method : "POST",
+      data : {type_ID: type_ID},
+      async : true,
+      dataType : 'json',
       success: function(data){
-        toastr.error('Product Deleted');
-        location.reload();
+        var html = '';
+        var i;
+        for(i=0; i<data.length; i++){
+          html += '<option value='+data[i].id+'>'+data[i].name+'</option>';
+        }
+        $('#category').html(html);
       }
     });
     return false;
-  });
-
-  $(document).on("click", ".view_image", function() { 
-    var product_ID = $(this).data('product-id');
-    var slug = $(this).data('product-slug');
-    $.ajax({
-      type : "POST",
-      url  : "<?=base_url()?>products/get_images",
-      dataType : "JSON",
-      data : {id:product_ID},
-      success: function(data){
-        var html = '';
-        var i;
-        for(i=0; i<data.length; i++){
-          html += '<img src="<?php echo base_url();?>assets/img/products/'+slug+'/'+data[i].image+'" class="img-thumbnail" style="width: 200px">';
-        }
-        $('#product_images').modal('show');
-        $('#image_list').html(html);
-      }
-    });
-  });
+  }
 
   //Add member
   $('#add_category').on('click',function(){
     var name = $('#new_category').val();
-    var type = $(".category_type:checked").val();
+    var type_ID = $(".category_type:checked").val();
     $.ajax({
       type : "POST",
       url  : "<?=base_url()?>products/create_category",
       dataType : "JSON",
-      data : {name:name, type:type},
+      data : {name:name, type_ID:type_ID},
       success: function(data){
         if(data.error){
           toastr.error(data.message);
         } else {
           toastr.success('Category created');
           $('#create_category').modal('hide');
+          get_category(type_ID);
+          $('#new_category').val('');
         }
-        $('#new_category').val('');
-        get_category();
       }
     });
     return false;
+  });
+
+  $(document).on("click", ".edit_status", function() { 
+    var status = $(this).data('status');
+    var product_ID = $(this).data('product-id');
+    $('#product_ID').val(product_ID);
+    $('#status_modal').modal('show');
+    if(status == 1){
+      $('#status').prop('checked',true);
+      $('#status_label').text('Active');
+      $('#status').val(1);
+    } 
+  });
+
+   //Like post
+  $('#confirm_status').on('click',function(){
+    var status = $('#status').val();
+    var product_ID = $('#product_ID').val();
+    $.ajax({
+      url:"<?=base_url()?>products/change_status",
+      method:"POST",
+      async : true,
+      dataType : 'json',
+      data:{product_ID:product_ID, status:status},
+      success:function(data) {
+        toastr.success('Status Updated!');
+        location.reload();
+      }
+    });
+  });
+
+  $("#status").click(function() {
+    if($("#status").is(":checked")){
+      $('#status_label').text('Active');
+      $(this).val(1);
+    } else {
+      $('#status_label').text('Inactive');
+      $(this).val(0);
+    }
   });
 });
 </script>

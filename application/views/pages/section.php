@@ -38,7 +38,7 @@
                 <?php if (!empty($content['url'])) {?>
                   <?php if ($player == 'vimeo') {?>
                     <div class="embed-responsive embed-responsive-16by9">
-                      <div class="embed-responsive-item" id="content_url_<?php echo $video_ID; ?>"></div>
+                      <div class="embed-responsive-item" id="content_url_<?php echo $content['id']; ?>"></div>
                     </div>
                   <?php } else { ?>
                     <div class="embed-responsive embed-responsive-16by9">
@@ -83,7 +83,7 @@
                   <div class="h-3">
                     <div>
                       <?php if (!empty($content['url'])) { ?>
-                      <a class="content_nav blue-text card-title click_card" data-id="<?php echo $content['id'];?>" data-current-row="<?php echo $count;?>" data-src="<?php echo $content['url'];?>" data-video="<?php echo $player;?>" data-video-id="<?php echo $video_ID;?>">
+                      <a class="content_nav blue-text card-title click_card" data-id="<?php echo $content['id'];?>" data-current-row="<?php echo $count;?>" data-src="<?php echo $content['url'];?>" data-video="<?php echo $player;?>" data-video-id="<?php echo $video_ID;?>" src="<?php echo $content['url'];?>">
                         <div class="text-center text_content text_content_<?php echo $count;?> text_content_id_<?php echo $content['id'];?>">
                           <div class="view">
                             <div class="embed-responsive embed-responsive-16by9" style="cursor: pointer;">
@@ -172,7 +172,7 @@ $(document).ready(function() {
       height: 480,
       autoplay: true,
     };
-    var player = new Vimeo.Player('content_url_'+vimeo_ID, options);
+    var player = new Vimeo.Player('content_url_'+content, options);
     let playing = true;
 
     function get_progress(handle_data) {
@@ -377,15 +377,23 @@ $(document).ready(function() {
       success: function(data){
         for(i=0; i<data.length; i++){
           var html = '';
-          
           if(data[i].status == 1){
             var percentage = 100;
           } else {
             var percentage = Math.round(((data[i].progress / data[i].duration) * 100)); 
           }
-          
           html += '<div class="progress-bar bg-success" role="progressbar" style="width: '+percentage+'%; height: 20px" aria-valuenow="'+data[i].progress+'" aria-valuemin="0" aria-valuemax="'+data[i].duration+'"></div>';
           $('.progress_'+data[i].content_ID).html(html);
+          
+        }
+      }
+    });
+    $.ajax({
+      type : "POST",
+      url  : base_url +"users/all_videos",
+      dataType : "JSON",
+      success: function(data){
+        for(i=0; i<data.length; i++){
           $('.duration_'+data[i].content_ID).text(secondsTimeSpanToHMS(Math.round(data[i].duration)));
         }
       }
@@ -398,7 +406,7 @@ $(document).ready(function() {
     var m = Math.floor(s/60); //Get remaining minutes
     s -= m*60;
     return h+":"+(m < 10 ? '0'+m : m)+":"+(s < 10 ? '0'+s : s); //zero padding on minutes and seconds
-}
+  }
 
   $('.content_nav').on('click', function() {
     var current_row = $(this).data('current-row'); 
@@ -436,7 +444,6 @@ $(document).ready(function() {
     $('html, body').animate({
       scrollTop: $('#main_header').offset().top
     }, 1000);
-    //$(window).scrollTop(180);
     var video = $('.current_row_'+current).data('video'); 
     if(video == 'vimeo'){
      get_video(current);
@@ -467,13 +474,8 @@ $(document).ready(function() {
 $(document).ready(function(){
   $('.center').slick({
     infinite: false,
-    //dots: true,
-    //centerMode: true,
     slidesToShow: 3,
     slidesToScroll: 3,
-    //variableWidth: true,
-    //adaptiveHeight: true,
-    //rtl: true,
     responsive: [
     {
       breakpoint: 1024,

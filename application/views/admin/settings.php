@@ -20,15 +20,16 @@
             <tbody>
               <tr>
                 <td>System Status</td>
-                <td><?php 
+                <td>
+                  <?php 
                   if($settings['system_status'] == 0){
-                    echo '<span class="badge badge-pill badge-success">Active</span>';
+                    echo '<span class="badge badge-pill badge-danger">Under Maintenance</span>';
                   } else {
-                    echo '<span class="badge badge-pill badge-danger">Maintenance</span>';
+                    echo '<span class="badge badge-pill badge-success">Active</span>';
                   }
                   ?>
                 </td>
-                <td><a class="text-primary" data-toggle="modal" data-target="#edit_status"><i class="fas fa-edit text-primary"></i> Edit</a></td>
+                <td><a class="text-primary" data-toggle="modal" data-target="#edit_system_status"><i class="fas fa-edit text-primary"></i> Edit</a></td>
               </tr>
               <tr>
                 <td>Logo</td>
@@ -51,9 +52,17 @@
                 <td><a class="text-primary" data-toggle="modal" data-target="#edit_music"><i class="fas fa-edit text-primary"></i> Edit</a></td>
               </tr>
               <tr>
-                <td>Navbar Color</td>
-                <td><?php echo $settings['nav_text_color'];?></td>
-                <td><a class="text-primary" data-toggle="modal" data-target="#edit_nav_color"><i class="fas fa-edit text-primary"></i> Edit</a></td>
+                <td>Review Post Status</td>
+                <td>
+                  <?php 
+                  if($settings['review_post_status'] == 0){
+                    echo '<span class="badge badge-pill badge-danger">Off</span>';
+                  } else {
+                    echo '<span class="badge badge-pill badge-success">On</span>';
+                  }
+                  ?>
+                </td>
+                <td><a class="text-primary" data-toggle="modal" data-target="#edit_review_post_status"><i class="fas fa-edit text-primary"></i> Edit</a></td>
               </tr>
             </tbody>
           </table>
@@ -202,46 +211,6 @@
   </div>
 </div>
 
-<!-- Nav -->
-<div class="modal fade" id="edit_nav_color" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-  aria-hidden="true">
-  <div class="modal-dialog modal-md" role="document">
-    <div class="modal-content">
-      <div class="modal-header text-center">
-        <h4 class="modal-title w-100 font-weight-bold"></h4>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <?php echo form_open_multipart('settings/nav_text_color'); ?>
-      <div class="modal-body mx-3">
-        <label for="image">Nav Icon Color</label>
-        <div class="form-group">
-          <select class="browser-default custom-select" name="nav_color" id="nav_color">
-            <option value="amber-text">Yellow</option>
-            <option value="red-text">Red</option>
-            <option value="indigo-text">Indigo</option>
-            <option value="cyan-text">Cyan</option>
-            <option value="green-text">Green</option>
-            <option value="pink-text">Pink<option>
-            <option value="purple-text">Purple</option>
-            <option value="black-text">Black</option>
-            <option value="text-white">White</option>
-            <option value="blue-text">Blue</option>
-          </select>
-        </div>
-      </div>
-      <div class="modal-footer justify-content-center">
-        <button type="button" class="btn btn-outline-danger waves-effect" data-dismiss="modal">Cancel</button>
-        <button class="btn btn-outline-primary waves-effect" type="submit">Update</button>
-      </div>
-      <?php echo form_close(); ?>
-    </div>
-  </div>
-</div>
-
-<?php echo validation_errors(); ?>
-
 <!-- Change Password -->
 <div class="modal fade" id="changepassword" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
   aria-hidden="true">
@@ -278,7 +247,7 @@
 </div>
 
 <!-- Change Password -->
-<div class="modal fade" id="edit_status" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+<div class="modal fade" id="edit_system_status" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
   aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
@@ -289,10 +258,14 @@
         </button>
       </div>
       <div class="modal-body mx-3">
-        <?php echo form_open_multipart('admin/change_status'); ?>
+        <?php echo form_open_multipart('admin/change_system_status'); ?>
         <div class="form-group">
-          <label for="formGroupExampleInput">* Current Password</label>
-          <input type="password" name="current_password" class="form-control" required>
+          <label for="editstatus">* Status</label><br>
+          <div class="custom-control custom-switch">
+            <input type="checkbox" class="custom-control-input" name="system_status" id="system_status" <?php if($settings['system_status'] == 1){ echo 'checked'; } ?> value="<?php if($settings['system_status'] == 1){ echo '1';} else { echo '0';}?>">
+            <label class="custom-control-label" for="system_status" id="system_status_label"><?php if($settings['system_status'] == 0){ echo 'Under Maintenance'; } else { echo 'Active'; } ?>
+            </label>
+          </div>
         </div>
       </div>
       <div class="modal-footer justify-content-center">
@@ -303,3 +276,57 @@
     </div>
   </div>
 </div>
+
+<!-- Change Password -->
+<div class="modal fade" id="edit_review_post_status" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Change Review Post Status</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <?php echo form_open_multipart('admin/change_review_post_status'); ?>
+        <div class="form-group">
+          <label for="editstatus">* Status</label><br>
+          <div class="custom-control custom-switch">
+            <input type="checkbox" class="custom-control-input" name="review_status" id="review_status" <?php if($settings['review_post_status'] == 1){ echo 'checked'; } ?> value="<?php if($settings['review_post_status'] == 1){ echo '1';} else { echo '0';}?>">
+            <label class="custom-control-label" for="review_status" id="review_status_label"><?php if($settings['review_post_status'] == 0){ echo 'Off'; } else { echo 'On'; } ?>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-outline-danger waves-effect" data-dismiss="modal">Cancel</button>
+        <button class="btn btn-outline-primary waves-effect" type="submit">Save Changes</button>
+        <?php echo form_close(); ?>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+$(document).ready(function(){
+  $("#review_status").click(function() {
+    if($("#review_status").is(":checked")){
+      $('#review_status_label').text('On');
+      $(this).val(1);
+    } else {
+      $('#review_status_label').text('Off');
+      $(this).val(0);
+    }
+  });
+
+  $("#system_status").click(function() {
+    if($("#system_status").is(":checked")){
+      $('#system_status_label').text('On');
+      $(this).val(1);
+    } else {
+      $('#system_status_label').text('Off');
+      $(this).val(0);
+    }
+  });
+});
+</script>

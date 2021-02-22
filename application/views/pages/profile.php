@@ -155,7 +155,7 @@
                   </p>
                   <?php if (!empty($post['post_image'])) {?>
                     <div class="bg-image hover-overlay ripple rounded-0 mt-4">
-                      <img src="<?php echo base_url().'assets/img/posts/'.$post['post_image'];?>" class="w-100"/>
+                      <img src="<?php echo base_url().'assets/img/posts/'.hash('md5', $post['user_ID']).'/'.$post['post_image'];?>" class="w-100"/>
                         <a href="#!">
                           <div class="mask" style="background-color: rgba(251, 251, 251, 0.2)" ></div>
                         </a>
@@ -360,6 +360,8 @@
 $(document).ready(function(){
   $("img").addClass("img-fluid");
   liked();
+
+  $('.swipebox').swipebox();
 
   if(window.location.hash != ''){ 
     var hash = document.URL.substr(document.URL.indexOf('#')+1);

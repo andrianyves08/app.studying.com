@@ -73,9 +73,7 @@ class Messages extends CI_Controller {
 	}
 
 	function get_messages() {
-		$friend_ID = $this->input->post('user_ID');
-		$limit = $this->input->post('limit');
-		$user = $this->messages_model->messages($limit, $this->session->userdata('user_id'), $friend_ID);
+		$user = $this->messages_model->messages($this->input->post('limit'), $this->session->userdata('user_id'), $this->input->post('user_ID'));
 		
 		$max = count($user);
 		$output = '';
@@ -85,15 +83,19 @@ class Messages extends CI_Controller {
 		foreach(array_reverse($user) as $row){
 			$total = $max - $other;
 			if($row['fromID'] == $this->session->userdata('user_id')){
-				$output .= '<div class="d-flex justify-content-end">';
+				$output .= '<div class="d-flex justify-content-end align-items-center">';
 				if($row['mesStat'] == '2'){
 					$output .= '<div class="card border border-light bg-white rounded-pill w-50 float-right z-depth-0 mb-1 last"><div class="card-body"><p class="card-text text-black font-italic">This message has been removed.</p></div></div>';
 				} else {
-					$now = strtotime("-2 minutes");
-					if ($now > strtotime($row['mesSent'])) {
-					 	$output .='<div class="card bg-primary rounded w-50 float-right z-depth-0 mb-1 last"><div class="card-body p-2"><p class="card-text text-white" style="font-size: 16px;">'.$row['chat'].'</p></div><p class="card-text text-white p-2 text-right" style="font-size: 12px;">'.date("F d, Y h:i A", strtotime($row['mesSent'])).'</p></div>';
+					if (strtotime($row['mesSent'] > strtotime("-20 minutes"))) {
+					 	$output .='<div class="card bg-primary rounded w-50 float-right z-depth-0 mb-1 last"><div class="card-body p-2"><p class="card-text text-white" style="font-size: 16px;">'.$row['chat'].'</p></div><p class="card-text text-white p-2 text-right" style="font-size: 12px;">'.date("M j, Y h:i A", strtotime($row['mesSent'])).'</p></div>';
 					} else {
-						$output .='<div class="card bg-primary rounded w-50 z-depth-0 mb-1 last"><div class="card-body p-2"><p class="card-text text-white" style="font-size: 16px;">'.$row['chat'].'</p></div><p class="card-text text-white p-2 text-right" style="font-size: 12px;">'.date("F d, Y h:i A", strtotime($row['mesSent'])).'<a class="delete_chat" id="'.$row['chatID'].'"><span class="white-text p-2">&times;</span></a></p></div>';
+						$output .='<div class="card bg-primary rounded w-50 z-depth-0 mb-1 last"><div class="card-body p-2">';
+					if($row['parent_message'] != 0 ){
+						$chat = $this->messages_model->get_message($row['parent_message']);
+						$output .= '<p class="white-text font-italic ml-3" style="font-size: 16px;">" '.$chat['message'].' "</p><p class="text-white text-left ml-3" style="font-size: 12px;">You replied to '.ucwords($chat["first_name"]).' '.ucwords($chat["last_name"]).' '.date("M j, Y h:i A", strtotime($chat['timestamp'])).'</p><hr class="mt-1 mb-3">';
+					}
+					$output .=	'<p class="card-text text-white" style="font-size: 16px;">'.$row['chat'].'</p></div><p class="card-text text-white p-2 text-right" style="font-size: 12px;">'.date("M j, Y h:i A", strtotime($row['mesSent'])).'<a class="delete_chat" id="'.$row['chat_ID'].'"><span class="white-text p-2">&times;</span></a></p></div>';
 					}		
 				}
 				$output .= '<div class="profile-photo message-photo mt-2"><img src="'.base_url().'assets/img/users/'.$row['usImg'].'" alt="avatar" class="avatar ml-2 mr-0 chat-mes-id-2" style="height: 50px;width: 50px"><span class="state"></span></div></div>';
@@ -103,25 +105,29 @@ class Messages extends CI_Controller {
 				$i++;
 			} else {
 				$other++;
-				$output .= '<div class="d-flex justify-content-start mb-1">';
-				$output .= '<div class="profile-photo message-photo mt-2"><img src="'.base_url().'assets/img/users/'.$row['usImg'].'" alt="avatar" class="avatar mr-2 ml-0 chat-mes-id-2" style="height: 50px;width: 50px"><span class="state"></span></div>';
+				$output .= '<div class="d-flex justify-content-start mb-1 align-items-center">';
+				$output .= '<div class="profile-photo message-photo"><img src="'.base_url().'assets/img/users/'.$row['usImg'].'" alt="avatar" class="avatar mr-2 ml-0 chat-mes-id-2" style="height: 50px;width: 50px"><span class="state"></span></div>';
 				if($row['mesStat'] == '2'){
 				$output .= ' <div class="card border border-light bg-white rounded-pill w-50 z-depth-0 mb-1 message-text"><div class="card-body"><p class="card-text text-black font-italic">This message has been removed.</p></div></div></div>';
 				} else {
-				$output .= '<div class="card bg-light rounded w-50 z-depth-0 mb-1 message-text"><div class="card-body p-2"><p class="card-text black-text" style="font-size: 16px;">'.$row['chat'].'</p></div><p class="card-text black-text p-2 text-left" style="font-size: 12px;">'.date("F d, Y h:i A", strtotime($row['mesSent'])).'</p></div></div>';
+				$output .= '<div class="card bg-light rounded w-50 z-depth-0 mb-1 message-text"><div class="card-body p-2">';
+				if($row['parent_message'] != 0 ){
+					$chat = $this->messages_model->get_message($row['parent_message']);
+					$output .= '<p class="black-text font-italic ml-3" style="font-size: 16px;">" '.$chat['message'].' "</p><p class="text-left ml-3 text-muted" style="font-size: 12px;">'.ucwords($row["first_name"]).' '.ucwords($row["last_name"]).' replied to You '.date("M j, Y h:i A", strtotime($chat['timestamp'])).'</p><hr class="mt-1 mb-3">';
+				}
+				$output .= '<p class=black-text chat_texts_'.$row['chat_ID'].'" style="font-size: 16px;">
+				'.$row['chat'].'</p></div><p class="card-text text-muted p-1 ml-2 text-left" style="font-size: 12px;">'.date("M j, Y h:i A", strtotime($row['mesSent'])).'</p></div><a class="replay ml-2" data-message-id="'.$row['chat_ID'].'"><i class="fas fa-reply"></i></a></div>';
 				}
 			}
 		}
 		$output .= '';
-		$seen = $this->messages_model->message_seen($this->session->userdata('user_id'), $friend_ID);
+		$seen = $this->messages_model->message_seen($this->session->userdata('user_id'), $this->input->post('user_ID'));
 		echo json_encode($output);
 	}
 
 	function get_group_messages() {
-		$limit = $this->input->post('limit');
-		$group_ID = $this->input->post('group_ID');
-		$group_data = $this->messages_model->group_messages($limit, $this->session->userdata('user_id'), $group_ID);
-		$output = '<a><p class="text-center blue-text font-italic viewmore" id="data_chat_'.$group_ID.'">View More</p></a>';
+		$group_data = $this->messages_model->group_messages($this->input->post('limit'), $this->session->userdata('user_id'), $this->input->post('group_ID'));
+		$output = '';
 
 		$max = count($group_data);
 		$i = 1;
@@ -138,21 +144,31 @@ class Messages extends CI_Controller {
 				} else {
 					$now = strtotime("-2 minutes");
 					if ($now > strtotime($row["mesSent"])) {
-					 	$output .='<div class="card bg-primary rounded w-50 float-right z-depth-0 mb-1 last"><div class="card-body p-2"><p class="card-text text-white" style="font-size: 16px;">'.$row["chat"].'</p></div><p class="card-text text-white p-2 text-right" style="font-size: 12px;">'.date("F d, Y h:i A", strtotime($row["mesSent"])).'</p></div>';
+					 	$output .='<div class="card bg-primary rounded w-50 float-right z-depth-0 mb-1 last"><div class="card-body p-2"><p class="card-text text-white" style="font-size: 16px;">'.$row["chat"].'</p></div><p class="card-text text-white p-2 text-right" style="font-size: 12px;">'.date("M j, Y h:i A", strtotime($row["mesSent"])).'</p></div>';
 					} else {
-						$output .='<div class="card bg-primary rounded w-50 z-depth-0 mb-1 last"><div class="card-body p-2"><p class="card-text text-white" style="font-size: 16px;">'.$row["chat"].'</p></div><p class="card-text text-white p-2 text-right" style="font-size: 12px;">'.date("F d, Y h:i A", strtotime($row["mesSent"])).'<a class="delete_group_chat" id="'.$row["chatID"].'"><span class="white-text p-2">&times;</span></a></p></div>';
+						$output .='<div class="card bg-primary rounded w-50 z-depth-0 mb-1 last"><div class="card-body p-2">';
+						if($row['parent_message'] != 0 ){
+							$chat = $this->messages_model->get_group_message($row['parent_message']);
+							$output .= '<p class="text-white font-italic ml-3" style="font-size: 16px;">" '.$chat['message'].' "</p><p class="text-left ml-3 text-white" style="font-size: 12px;">You replied to '.ucwords($chat["first_name"]).' '.ucwords($chat["last_name"]).' '.date("M j, Y h:i A", strtotime($chat['timestamp'])).'</p><hr class="mt-1 mb-3">';
+						}
+				$output .= '<p class="card-text text-white" style="font-size: 16px;">'.$row["chat"].'</p></div><p class="card-text text-white p-2 text-right" style="font-size: 12px;">'.date("M j, Y h:i A", strtotime($row["mesSent"])).'<a class="delete_group_chat" id="'.$row["chat_ID"].'"><span class="white-text p-2">&times;</span></a></p></div>';
 					}		
 				}
 				$output .= '<div class="profile-photo message-photo mt-2"><img src="'.base_url().'assets/img/users/'.$row["usImg"].'" alt="avatar" class="avatar ml-2 mr-0 chat-mes-id-2" style="height: 50px;width: 50px"><span class="state"></span></div></div>';
 				$i++;
 			} else {
 				$other++;
-				$output .= '<div class="d-flex justify-content-start mb-1">';
+				$output .= '<div class="d-flex justify-content-start mb-1 align-items-center">';
 				$output .= '<div class="profile-photo message-photo mt-2"><img src="'.base_url().'assets/img/users/'.$row["usImg"].'" alt="avatar" class="avatar mr-2 ml-0 chat-mes-id-2" style="height: 50px;width: 50px"><span class="state"></span></div>';
 				if($row["mesStat"] == '2'){
 				$output .= '<div class="card border border-light bg-white rounded-pill w-50 z-depth-0 mb-1 message-text"><div class="card-body"><p class="card-text text-black font-italic">This message has been removed.</p></div></div></div>';
 				} else {
-				$output .= '<div class="card bg-light rounded w-50 z-depth-0 mb-1 message-text"><div class="card-body p-2"><p class="card-text black-text" style="font-size: 12px;">'.ucwords($row["first_name"]).' '.ucwords($row["last_name"]).'</p><p class="card-text black-text" style="font-size: 16px;">'.$row["chat"].'</p></div><p class="card-text black-text text-right mr-1" style="font-size: 12px;">'.date("F d, Y h:i A", strtotime($row["mesSent"])).'</p></div></div>';
+				$output .= '<div class="card bg-light rounded w-50 z-depth-0 mb-1 message-text"><div class="card-body p-2">';
+				if($row['parent_message'] != 0 ){
+					$chat = $this->messages_model->get_group_message($row['parent_message']);
+					$output .= '<p class="black-text font-italic ml-3" style="font-size: 16px;">" '.$chat['message'].' "</p><p class="text-left ml-3 text-muted" style="font-size: 12px;">'.ucwords($row["first_name"]).' '.ucwords($row["last_name"]).' replied to '.ucwords($chat["first_name"]).' '.ucwords($chat["last_name"]).'</p><hr class="mt-1 mb-3">';
+				}
+				$output .= '<p class="card-text black-text" style="font-size: 12px;">'.ucwords($row["first_name"]).' '.ucwords($row["last_name"]).'</p><p class="card-text black-text chat_texts_'.$row['chat_ID'].'" style="font-size: 16px;">'.$row["chat"].'</p></div><p class="card-text black-text text-left mr-1 p-2" style="font-size: 12px;">'.date("M j, Y h:i A", strtotime($row["mesSent"])).'</p></div><a class="group_replay ml-2" data-message-id="'.$row['chat_ID'].'"><i class="fas fa-reply"></i></a></div>';
 				}
 			}
 		}
@@ -166,17 +182,12 @@ class Messages extends CI_Controller {
 	}
 
 	function send_message() {
-		$user_ID = $this->input->post('user_ID');
-		$chat_message = nl2br(htmlentities($this->input->post('chat_message'), ENT_QUOTES, 'UTF-8'));
-		$toID = $this->user_model->get_users($user_ID);
-		$data = $this->messages_model->message_sent($this->session->userdata('user_id'), $user_ID, $chat_message);
+		$data = $this->messages_model->send_message($this->session->userdata('user_id'), $this->input->post('user_ID'),  nl2br(htmlentities($this->input->post('chat_message'), ENT_QUOTES, 'UTF-8')), $this->input->post('chat_ID'));
 		echo json_encode($data);
 	}
 
 	function send_group_message() {
-		$group_ID = $this->input->post('group_ID');
-		$chat_message = nl2br(htmlentities($this->input->post('chat_message'), ENT_QUOTES, 'UTF-8'));
-		$data = $this->messages_model->group_message_sent($this->session->userdata('user_id'), $group_ID, $chat_message);
+		$data = $this->messages_model->send_group_message($this->session->userdata('user_id'), $this->input->post('group_ID'), nl2br(htmlentities($this->input->post('chat_message'), ENT_QUOTES, 'UTF-8')), $this->input->post('chat_ID'));
 		echo json_encode($data);
 	}
 

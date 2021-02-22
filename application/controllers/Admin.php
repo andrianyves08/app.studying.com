@@ -88,7 +88,7 @@ class Admin extends CI_Controller {
 		
 		$this->load->view('templates/admin/header', $data);
         $this->load->view('templates/admin/nav', $data);
-		$this->load->view('admin/profile', $data);
+		$this->load->view('admin/users-profile', $data);
         $this->load->view('templates/admin/footer');
         $this->load->view('templates/admin/scripts');
         $this->load->view('templates/admin/page_scripts/profile');
@@ -327,5 +327,21 @@ class Admin extends CI_Controller {
 	function seen() {
 		$data = $this->support_model->seen();
 		echo json_encode($data);
+	}
+
+	function change_profile(){
+	   	$data = $this->user_model->change_profile($this->input->post('first_name'), $this->input->post('last_name'), $this->input->post('image'), $this->input->post('bio'), $this->input->post('email'), $this->input->post('user_ID'));
+	   	$this->session->set_flashdata('success', 'Profile updated');
+		redirect('admin/users/'.$this->input->post('user_ID'));
+	}
+
+	function change_review_post_status(){
+	   	$data = $this->settings_model->change_review_post_status($this->input->post('review_status'));
+		redirect('admin/settings');
+	}
+
+	function change_system_status(){
+	   	$data = $this->settings_model->change_system_status($this->input->post('system_status'));
+		redirect('admin/settings');
 	}
 }

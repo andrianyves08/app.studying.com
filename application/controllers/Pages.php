@@ -9,12 +9,23 @@ class Pages extends CI_Controller {
 
 	public function user_status(){
 		$settings = $this->settings_model->get_settings();
+
+		// Check if the admin account is also logged-in in order to use the system even if its undermaintenance.
+		if($this->session->userdata('user_logged_in') || $this->session->userdata('admin_logged_in')){
+			$user = TRUE;
+		} else {
+			$user = FALSE;
+		}
+		
+		// a = admin
 	 	$data = array(
-            'isLoggedIn' => $this->session->userdata('user_logged_in'),
+            'isLoggedIn' => $user,
             'fn' => ucwords($this->session->userdata('first_name')),
 			'ln' => ucwords($this->session->userdata('last_name')),
-			'status' => $settings['system_status']
+			'status' => $settings['system_status'],
+			'a' => $this->session->userdata('admin_logged_in'),
         );
+
       	$this->output->set_header('Content-type: application/json');
         $this->output->set_output(json_encode($data));
 	}
@@ -22,6 +33,11 @@ class Pages extends CI_Controller {
 	public function maintenance(){
 		$page = 'maintenance';
 		$data['title'] = ucfirst($page);
+
+		$settings = $this->settings_model->get_settings();
+		if($settings['system_status'] == 1){
+			redirect(base_url());
+		}
 
 		$this->load->view('pages/'.$page, $data);
 		$this->load->view('templates/scripts');
@@ -318,43 +334,25 @@ class Pages extends CI_Controller {
 		$this->load->view('templates/scripts');
 	}
 
-	public function products(){
-		$page = 'products';
-		$data['title'] = ucfirst($page);
-		$data['settings'] = $this->settings_model->get_settings();
-		$data['my_id'] = $this->session->userdata('user_id');
-		$data['unseen_chat'] = $this->messages_model->total_message_unseen($this->session->userdata('user_id'));
-
-		$data['products'] = $this->product_model->get_all_products(NULL, 12, FALSE);
-		$data['categories'] = $this->product_model->get_categories();
-		$data['images'] = $this->product_model->get_images();
-
-		$this->load->view('templates/header', $data);
-		$this->load->view('templates/nav', $data);
-		$this->load->view('pages/products', $data);
-		$this->load->view('templates/footer');
-		$this->load->view('templates/scripts');
-	}
-
-	public function products_categories($category_slug){
+	public function rated_products_categories($category_slug){
 		if($category_slug == 'all'){
 			redirect('rated-products');
 		}
-		$page = 'products';
+		$page = 'tools';
 		$data['title'] = ucfirst($page);
 		$data['settings'] = $this->settings_model->get_settings();
 		$data['my_id'] = $this->session->userdata('user_id');
 		$data['unseen_chat'] = $this->messages_model->total_message_unseen($this->session->userdata('user_id'));
-		$data['category_name'] = $this->product_model->get_categories($category_slug);
-		$data['products'] = $this->product_model->get_all_products(NULL, NULL, FALSE);
-		$data['product_categories'] = $this->product_model->get_categories_products($category_slug);
-		$data['images'] = $this->product_model->get_images();
-		$data['categories'] = $this->product_model->get_categories();
+		$data['category_name'] = $this->rated_product_model->get_categories($category_slug);
+		$data['products'] = $this->rated_product_model->get_all_products(NULL, NULL, FALSE);
+		$data['product_categories'] = $this->rated_product_model->get_categories_products($category_slug);
+		$data['images'] = $this->rated_product_model->get_images();
+		$data['categories'] = $this->rated_product_model->get_categories();
 		$data['category_slug'] = $category_slug;
 
 		$this->load->view('templates/header', $data);
 		$this->load->view('templates/nav', $data);
-		$this->load->view('pages/products', $data);
+		$this->load->view('pages/tools', $data);
 		$this->load->view('templates/footer');
 		$this->load->view('templates/scripts');
 	}
@@ -367,9 +365,9 @@ class Pages extends CI_Controller {
 		$data['music_status'] = $this->user_model->get_music_status($this->session->userdata('user_id'));
 		$data['unseen_chat'] = $this->messages_model->total_message_unseen($this->session->userdata('user_id'));
 
-		$data['products'] = $this->product_model->get_all_products(NULL, 12, FALSE);
-		$data['categories'] = $this->product_model->get_categories();
-		$data['images'] = $this->product_model->get_images();
+		$data['products'] = $this->rated_product_model->get_all_products(NULL, 12, FALSE);
+		$data['categories'] = $this->rated_product_model->get_categories();
+		$data['images'] = $this->rated_product_model->get_images();
 
 		$this->load->view('templates/header', $data);
         $this->load->view('templates/nav', $data);

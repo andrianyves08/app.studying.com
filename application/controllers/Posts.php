@@ -35,11 +35,15 @@ class Posts extends CI_Controller {
 		}
 
 		if($image != NULL || $this->input->post('posts') != NULL){
+			$status = $this->posts_model->get_review_status();
 			$data = $this->posts_model->create($image, nl2br(htmlentities($this->input->post('posts'), ENT_QUOTES, 'UTF-8')), $this->session->userdata('user_id'));
-			if($data){
-				$this->delete_cache();
-				$this->session->set_flashdata('success', 'Your posts will be reviewed!');
+
+			if($status['review_post_status'] == 0){
+				$this->session->set_flashdata('success', 'Post created successfully!');
+			} else {
+				$this->session->set_flashdata('success', 'Your post will be reviewed!');
 			}
+
 		} else {
 			$this->session->set_flashdata('error', 'Enter a posts!');
 		}
@@ -48,7 +52,6 @@ class Posts extends CI_Controller {
 	}
 
 	function liked() {
-		$this->delete_cache();
 		$liked = $this->posts_model->like_post($this->input->post('posts'), $this->input->post('user_ID'), $this->session->userdata('user_id'));
 
 		if(!$liked){
@@ -65,9 +68,7 @@ class Posts extends CI_Controller {
 	}
 
 	function like_comment() {
-		$this->delete_cache();
 		$liked = $this->posts_model->like_comment($this->input->post('comment_ID'), $this->session->userdata('user_id'));
-
 		if(!$liked){
 			$this->posts_model->unlike_comment($this->input->post('comment_ID'), $this->session->userdata('user_id'));
 			$data = array(
@@ -119,16 +120,14 @@ class Posts extends CI_Controller {
 		$posts = $this->posts_model->get_posts(5, $this->input->post('start'), $user_ID);
 		$output = '';
 
-
 		foreach($posts as $post){
 			if($post['post_status'] == 1){
-
 			$output .= '<section class="mb-4 posts">
 					      <div class="row justify-content-center">
 							  <div class="col-lg-8">
 								  <div class="card">
 								      <div class="media mt-2">
-								          <img class="ml-2 rounded-circle card-img-100 d-flex z-depth-1 mr-2 chat-mes-id" src="'.base_url().'assets/img/users/'.$post['image'].'" style="height: 50px; width: 50px" alt="Profile photo">
+								          <img class="ml-2 rounded-circle card-img-100 d-flex z-depth-1 mr-2 chat-mes-id" src="'.base_url().'assets/img/users/'.$post['image'].'" style="height: 50px; width: 50px" alt="'.ucwords($post['first_name']).' '.ucwords($post['last_name']).' profile photo">
 								          <div class="media-body">
 											<h5><a class="text-dark" ';
 							                if($post['user_ID'] == $this->session->userdata('user_id')){ 
@@ -271,7 +270,6 @@ class Posts extends CI_Controller {
 	}
 
 	function add_comment() {
-		$this->delete_cache();
 		$image = NULL;
 		if(!empty($this->input->post('image'))){
 			$image = $this->input->post('image');
@@ -279,11 +277,6 @@ class Posts extends CI_Controller {
 
 		$data = $this->posts_model->add_comments($image, $this->input->post('post_ID'), $this->input->post('comment'), $this->input->post('comment_ID'), $this->input->post('user_ID'), $this->session->userdata('user_id'));
 		echo json_encode($data);
-	}
-
-	function delete_cache() {
-    	$this->load->helper('cache');
-    	delete_all_cache();
 	}
 
 	//Upload image summernote
@@ -331,8 +324,8 @@ class Posts extends CI_Controller {
 		echo json_encode($data);
 	}
 
-	function not_accept_post() {
-		$data = $this->posts_model->not_accept_post($this->input->post('post_ID'), $this->input->post('user_ID'));
+	function deny_post() {
+		$data = $this->posts_model->deny_post($this->input->post('post_ID'), $this->input->post('user_ID'));
 		echo json_encode($data);
 	}
 
