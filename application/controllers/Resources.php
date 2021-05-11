@@ -31,7 +31,6 @@ class Resources extends CI_Controller {
 		$this->load->view('admin/'.$page, $data);
 		$this->load->view('templates/admin/footer');
         $this->load->view('templates/admin/scripts');
-        $this->load->view('templates/admin/page_scripts/default');
 	}
 
 	public function create_resource(){
@@ -78,7 +77,8 @@ class Resources extends CI_Controller {
 		$this->form_validation->set_error_delimiters('', '');
 		$this->form_validation->set_rules('title', 'title', 'required');
 		$this->form_validation->set_rules('type', 'type', 'required');
-		$this->form_validation->set_rules('description', 'description', 'required');
+		$this->form_validation->set_rules('meta_description', 'description', 'required');
+		$this->form_validation->set_rules('meta_keywords', 'keywords', 'required');
 		$this->form_validation->set_rules('content', 'content', 'required');
         
         if ($this->form_validation->run() === FALSE) {
@@ -130,7 +130,7 @@ class Resources extends CI_Controller {
 				}
 			}
 
-			$create=$this->resources_model->create_content($this->session->userdata('admin_id'), $this->input->post('title'), $this->input->post('description'), $this->input->post('type'), $banner, $this->input->post('content'),$this->input->post('select_category'), $this->input->post('select_keyword'), $uploads);
+			$create=$this->resources_model->create_content($this->session->userdata('admin_id'), $this->input->post('title'), $this->input->post('meta_description'), $this->input->post('type'), $banner, $this->input->post('content'), $this->input->post('select_category'), $this->input->post('meta_keywords'), $uploads);
 
 			if($create){
 				$this->session->set_flashdata('success', 'Content Created Successfully');
@@ -143,11 +143,6 @@ class Resources extends CI_Controller {
 
 	function get_category() {
 		$data = $this->resources_model->get_categories();
-	    echo json_encode($data);
-	}
-
-	function get_keyword() {
-		$data = $this->resources_model->get_keywords();
 	    echo json_encode($data);
 	}
 
@@ -170,33 +165,7 @@ class Resources extends CI_Controller {
 	    echo json_encode($data);
 	}
 
-	function create_keyword() {
-		$keyword_name = $this->input->post('name');
-		if(empty($keyword_name)){
-			$data = array(
-				'error' => true,
-				'message' => 'keyword name required'
-			);
-		} else {
-			$data = $this->resources_model->create_keyword($keyword_name);
-			if(!$data){
-				$data = array(
-					'error' => true,
-					'message' => 'Keyword name already exist!'
-				);
-			}
-		}
-	    echo json_encode($data);
-	}
-
-	function update_content() {
-		$id = $this->input->post('resource_ID');
-		$title = $this->input->post('title');
-		$description = $this->input->post('description');
-		$type = $this->input->post('type');
-		$content = $this->input->post('content');
-		$select_category = $this->input->post('select_category');
-		$select_keyword = $this->input->post('select_keyword');
+	function update() {
 		$config['upload_path'] = './assets/img/blogs';
 		$config['allowed_types'] = 'gif|jpg|png';
 		$this->upload->initialize($config);
@@ -237,13 +206,13 @@ class Resources extends CI_Controller {
 					$error=array('error' => $this->upload->display_errors());
 					$this->session->set_flashdata('error',$error['error']);
 				} else {
-					$this->resources_model->delete_files($id);
-					$this->resources_model->upload_file($uploads, $id);
+					$this->resources_model->delete_files($this->input->post('resource_ID'));
+					$this->resources_model->upload_file($uploads, $this->input->post('resource_ID'));
 				}
 			}
 		}
 		
-		$create = $this->resources_model->update_content($id, $title, $description, $type, $banner, $content, $select_category, $select_keyword);
+		$create = $this->resources_model->update($this->input->post('resource_ID'), $this->input->post('title'), $this->input->post('meta_description'), $this->input->post('type'), $banner, $this->input->post('content'), $this->input->post('select_category'), $this->input->post('meta_keywords'));
 
 		if($create){
 			$this->session->set_flashdata('success', 'Resource update Successfully');
@@ -251,7 +220,7 @@ class Resources extends CI_Controller {
 			$this->session->set_flashdata('error', 'Resource name already exist.');
 		}
 
-		redirect('admin/resources/edit/'.$id);
+		redirect('admin/resources/edit/'.$this->input->post('resource_ID'));
 	}
 
 	//Upload image summernote

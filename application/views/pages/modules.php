@@ -25,44 +25,35 @@
 </main>
 <script type="text/javascript">
 $(document).ready(function(){
-  last_watched();
-  function last_watched(){
-    $('.courses').each(function(){
-      var slug = $(this).data('slug');
-      var id = $(this).data('id');
-      get_course_progress(slug, id);
-    });
-    $('.sections').each(function(){
-      var slug = $(this).data('slug');
-      var section_slug = $(this).data('section-slug');
-      var id = $(this).data('id');
-      get_module_progress(slug, section_slug, id);
-    });
-  }
-  function get_course_progress(slug, id){
-    $.ajax({
-      type  : 'POST',
-      url   : "<?=base_url()?>users/get_module_progress",
-      dataType : 'json',
-      data : {slug:slug},
-      success : function(data){
+   var program_slug = '<?php echo $slug; ?>';
+  last_watched(program_slug);
+  function last_watched(program_slug){
+  $.ajax({
+    type  : 'POST',
+    url   : "<?=base_url()?>users/get_module_progress",
+    dataType : 'json',
+    data : {program_slug:program_slug},
+    success : function(data){
+      for(i=0; i<data.length; i++){
         var html = '';
-        html += '<div class="form-inline mb-2"><strong class="text-dark mr-2">Module Progress </strong><div class="progress" style="width: 100px; height: 20px;"><div class="progress-bar bg-success text-dark" role="progressbar" style="width: '+data.percentage_width+'%;" aria-valuemin="0" aria-valuemax="'+data.total+'">'+data.percentage+' % </div></div></div>';
-        $('#course_progress'+id).html(html);
+        html += '<div class="form-inline mb-2"><strong class="text-dark mr-2">Module Progress </strong><div class="progress" style="width: 100px; height: 20px;"><div class="progress-bar bg-success text-dark" role="progressbar" style="width: '+data[i].percentage_width+'%;" aria-valuemin="0" aria-valuemax="'+data[i].total+'">'+data[i].percentage+' % </div></div></div>';
+        $('#course_progress'+data[i].course_ID).html(html);
       }
-    });
-  }
-  function get_module_progress(slug, section_slug, id){
-    $.ajax({
+    }
+  });
+
+  $.ajax({
       type  : 'POST',
       url   : "<?=base_url()?>users/get_section_progress",
       dataType : 'json',
-      data : {slug:slug, section_slug:section_slug},
+      data : {program_slug:program_slug},
       success : function(data){
-        if(data.percentage == 100){
+        for(i=0; i<data.length; i++){
           var html = '';
-          html += '<i class="fas fa-star amber-text mr-1"></i>';
-          $('#section_'+id).html(html);
+          if(data[i].percentage == 100){
+            html += '<i class="fas fa-star amber-text mr-1"></i>';
+            $('#section_'+data[i].section_ID).html(html);
+          }
         }
       }
     });
@@ -85,21 +76,24 @@ $(document).ready(function(){
         slidesToShow: 2,
         slidesToScroll: 2,
         infinite: false,
-        dots: true
+        dots: true,
+        adaptiveHeight: true,
       }
     },
     {
       breakpoint: 600,
       settings: {
         slidesToShow: 1,
-        slidesToScroll: 1
+        slidesToScroll: 1,
+         adaptiveHeight: true
       }
     },
     {
       breakpoint: 480,
       settings: {
         slidesToShow: 1,
-        slidesToScroll: 1
+        slidesToScroll: 1,
+        adaptiveHeight: true
       }
     }
   ]
@@ -108,6 +102,5 @@ $(document).ready(function(){
     var hash = document.URL.substr(document.URL.indexOf('#')+1);
     $('.center').slick('slickGoTo', hash - 2);
   }
-  
 });
 </script>

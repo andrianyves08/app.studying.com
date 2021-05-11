@@ -6,8 +6,8 @@
     }
 
     function get_messages(){
-    	$this->db->select('*, users.id as user_ID, messages_support.id as message_ID');
-		$this->db->join('users', 'users.id = messages_support.from_ID');
+    	$this->db->select('*, users.id as user_ID, messages_support.id as message_ID, messages_support.name as other_user_name, messages_support.email other_email');
+		$this->db->join('users', 'users.id = messages_support.from_ID', 'left');
 		$query = $this->db->get('messages_support');
 		return $query->result_array();
 	}
@@ -40,9 +40,11 @@
 		$this->db->update('messages_support');
 
 		$data = array(
-			'type' => 5,
+			'type' => 3,
+			'notification_option_id' => 5,
 			'owner' => $user_ID,
 		);
+		
 		$this->db->insert('users_notifications', $data);
 
 		if ($this->db->trans_status() === FALSE){

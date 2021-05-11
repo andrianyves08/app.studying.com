@@ -1,11 +1,13 @@
-<!-- <?php error_reporting(0); ?> -->
+<?php 
+  error_reporting(0); 
+?> 
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <title>Studying.com <?php echo $title; ?></title>
+  <title><?php echo $title; ?></title>
   <link rel="icon" href="<?php echo base_url();?>assets/img/overlays/logo-1.png">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.2/css/all.css">
@@ -48,11 +50,12 @@
     });
   </script>
 
+  <script src="<?php echo base_url();?>assets/plugins/ckeditor/ckeditor.js"></script>
   <link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/swipebox/src/css/swipebox.css">
-  
-<script src="<?php echo base_url();?>assets/plugins/swipebox/src/js/jquery.swipebox.js"></script>
+  <script src="<?php echo base_url();?>assets/plugins/swipebox/src/js/jquery.swipebox.js"></script>
 
-</head>
+  <script src="<?php echo base_url();?>assets/plugins/fbgrid/src/images-grid.js"></script>
+  <link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/fbgrid/src/images-grid.css">
 <style type="text/css">
 * {
   margin: 0;
@@ -62,6 +65,7 @@ html{
   font-size: 1em !important;
   font-family: Roboto !important;
 }
+
 html, body {
   height: 100%;
   width: 100%;
@@ -96,6 +100,7 @@ body {
 
 .navbar{
   background: #fff;
+  z-index: 10 !important;
   <?php if($title == 'Home'){?>
     border: none !important;
     box-shadow: none !important;
@@ -172,7 +177,6 @@ img {
   object-position: center;
   height: 100%;
   width: 100%;
-  image-rendering: pixelated;
 }
 
 .chat-mes-id-3 {
@@ -251,7 +255,7 @@ img {
 }
 
 .border {
-  border-width:3px !important;
+  <?php if($title == 'Section'){ echo 'border-width:3px !important;'; }?>
   border-radius: 16px !important;
 }
 
@@ -345,11 +349,6 @@ p {
     margin-bottom: 0;
 }
 
-textarea#posts {
-    background: #eeeeee;
-    border-radius: 100px !important;
-}
-
 .image_textarea{
   display: none;
 }
@@ -384,11 +383,60 @@ textarea#posts {
   position: relative;
 }
 
-.checkboxButton[type="checkbox"]:checked + .checkbox_label{
+.checkboxButton[type="checkbox"]:checked + .checkbox_label {
   border: 2px solid #1dc973;
+}
+
+.notifications{
+  max-height: 300px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+#custom_textarea {
+  -moz-appearance: textfield-multiline;
+  -webkit-appearance: textarea;
+  border: 1px solid gray;
+  font: medium -moz-fixed;
+  font: -webkit-small-control;
+  overflow: auto;
+  padding: 10px;
+  width: 400px;
+  background: #fff !important;
+  border-radius: 100px !important;
+  outline: none;
+  font-size: 16px;
+}
+
+.click_emoji{
+  font-size: 18px;
+}
+
+.view_full_post_modal{
+  padding: 10px !important;
+}
+
+body.modal-open {
+  overflow: hidden;
 }
 </style>
 <body>
+<script type="text/javascript">
+$(document).ready(function() {
+  if("<?php if($timezone != 'UTC'){ echo $timezone; } ?>".length==0){
+    var visitortime = new Date();
+    var timezone = -visitortime.getTimezoneOffset()/60;
+    $.ajax({
+      type: "post",
+      url:"<?=base_url()?>pages/timezone",
+      data:{timezone:timezone},
+      success: function(){
+        location.reload();
+      }
+    });
+  }
+});
+</script>
 <div class="preloader">
   <picture>
     <a>
@@ -417,14 +465,16 @@ $(document).ready(function() {
   var base_url = '<?php echo base_url() ?>';
 </script>
 <div class="video-overlay"></div>
-<?php if($title == 'Home'){ ?>
-  <video class="video-intro" autoplay muted loop id="myVideo">
-    <source src="<?php echo base_url();?>assets/img/videos/<?php echo $settings['home_video'];?>" type="video/mp4">
-  </video> 
-<?php } ?>
-<?php if($title == 'Home'){ ?>
-  <audio autoplay loop <?php if($music_status['music_status'] == '0'){ echo 'muted';}?> id="audioDemo"><source src="<?php echo base_url();?>assets/img/<?php echo $settings['music'];?>" type="audio/mp3"><a href="https://icons8.com/music/author/vadim-derepa">Vadim Derepa</a></audio>
-  <div class="col-md-4 d-flex justify-content-end" id="player">
-    <a><i class="fas <?php if($music_status['music_status'] == '0'){ echo 'fa-volume-off';} else { echo 'fa-volume-up';}?> fa-lg" id="stopmusic"></i></a>
-  </div>
+<?php
+  function isMobile() {
+    return preg_match("/(android|avantgo|blackberry|bolt|boost|cricket|docomo|fone|hiptop|mini|mobi|palm|phone|pie|tablet|up\.browser|up\.link|webos|wos)/i", $_SERVER["HTTP_USER_AGENT"]);
+  }
+
+if($title == 'Home'){ ?>
+  <?php if(isMobile() == 0){ ?>
+    <audio autoplay loop <?php if($music_status['music_status'] == '0'){ echo 'muted';}?> id="audioDemo"><source src="<?php echo base_url();?>assets/img/<?php echo $settings['music'];?>" type="audio/mp3"><a href="https://icons8.com/music/author/vadim-derepa">Vadim Derepa</a></audio>
+    <div class="col-md-4 d-flex justify-content-end" id="player">
+      <a><i class="fas <?php if($music_status['music_status'] == '0'){ echo 'fa-volume-off';} else { echo 'fa-volume-up';}?> fa-lg" id="stopmusic"></i></a>
+    </div>
+  <?php } ?>
 <?php } ?>

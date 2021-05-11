@@ -37,54 +37,5 @@
 </div><!--Container-->
 </main><!--Main laypassed out-->
 <script>
-$(document).ready(function(){
-  $('.textarea').summernote({
-    height: "300px",
-    callbacks: {
-      onImageUpload: function(image) {
-      uploadImage(image[0]);
-      }
-    },
-    toolbar: [
-        ['style', ['style']],
-    ['font', ['bold', 'italic', 'underline', 'clear', 'fontsize']],
-    ['fontname', ['fontname']],
-    ['color', ['color']],
-    ['para', ['ul', 'ol', 'paragraph']],
-    ['height', ['height']],
-    ['table', ['table']],
-    ['insert', ['link', 'picture', 'hr']],
-    ['view', ['fullscreen', 'codeview']],
-    ['help', ['help']]
-    
-      // ['style', ['style']],
-      // ['font', ['bold', 'underline', 'clear', 'fontsize']],
-      // ['fontname', ['fontname']],
-      // ['color', ['color']],
-      // ['para', ['ul', 'ol', 'paragraph']],
-      // ['table', ['table']],
-      // ['insert', ['link', 'picture', 'video']],
-      // ['view', ['fullscreen', 'codeview', 'help']],
-    ],
-  });
-
-  function uploadImage(image) {
-    var data = new FormData();
-    data.append("image", image);
-    $.ajax({
-      url: "<?php echo site_url('courses/upload_image')?>",
-      cache: false,
-      contentType: false,
-      processData: false,
-      data: data,
-      type: "POST",
-      success: function(url) {
-        $('.textarea').summernote('insertImage', url);
-      },
-      error: function(data) {
-        console.log(data);
-      }
-    });
-  }
-});
+  CKEDITOR.replace(content);
 </script>

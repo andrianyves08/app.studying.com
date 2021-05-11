@@ -31,7 +31,7 @@
                         Studying
                       <?php } ?>
                     </td>
-                    <td><?php echo ucwords($faq['question']);?></td>
+                    <td><?php echo ucfirst($faq['question']);?></td>
                     <td><?php echo $faq['answer'];?></td>
                     <td><?php echo date("F d, Y h:i A", strtotime($faq['timestamp']));?></td>
                     <td>

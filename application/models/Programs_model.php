@@ -22,13 +22,41 @@
 		return $query->result_array();
 	}
 
+
+	public function user_purchase_by_section($slug, $user_ID){
+		$this->db->select('course_section.name as section_name, 
+			course.slug as course_slug, 
+			course.id as course_ID, 
+			course_section.slug as section_slug, 
+			course.row as row,
+			programs.slug as slug,
+			course_section.slug as section_slug,
+			course_section.id as section_ID
+			');
+		$this->db->join('programs', 'programs.id = users_programs.program_ID');
+		$this->db->join('programs_modules', 'programs_modules.program_ID = programs.id');
+		$this->db->join('course', 'course.id = programs_modules.course_ID');
+		$this->db->join('course_section', 'course.id = course_section.course_ID');
+		$this->db->where('users_programs.user_ID', $user_ID);
+		$this->db->where('programs.slug', $slug);
+		$this->db->where('course.status', '1');
+		$this->db->where('course_section.status', '1');
+		$this->db->order_by('course_section.row', 'ASC');
+		$this->db->group_by('course_section.id');
+		$query = $this->db->get('users_programs');
+		return $query->result_array();
+	}
+
 	public function my_purchases_by_section($slug, $user_ID, $course_slug){
 		$this->db->select('course_section.name as section_name, 
 			course.slug as course_slug, 
 			course.id as course_ID, 
 			course_section.slug as section_slug, 
 			course.row as row,
-			programs.slug as slug');
+			programs.slug as slug,
+			course_section.slug as section_slug,
+			course_section.id as section_ID
+			');
 		$this->db->join('programs', 'programs.id = users_programs.program_ID');
 		$this->db->join('programs_modules', 'programs_modules.program_ID = programs.id');
 		$this->db->join('course', 'course.id = programs_modules.course_ID');
@@ -47,7 +75,7 @@
 	public function get_user_programs($id){
 		$this->db->select('programs.slug as slug, programs.name as name');
 		$this->db->join('programs', 'programs.id = users_programs.program_ID');
-		$this->db->where('users_programs.user_ID', $this->session->userdata('user_id'));
+		$this->db->where('users_programs.user_ID', $id);
 		$query = $this->db->get('users_programs');
 		return $query->result_array();
 	}

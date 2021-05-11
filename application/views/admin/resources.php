@@ -10,14 +10,16 @@
     </div>
   </div>
   <!-- Heading -->
-
   <div class="row">
     <div class="col-md-12">
       <div class="card">
         <div class="card-body">
           <table class="table table-bordered display table-responsive-md" cellspacing="0" width="100%">
             <thead>
+              <th>ID</th>
               <th>Title</th>
+              <th>Meta Description</th>
+              <th>Meta Keywords</th>
               <th>Type</th>
               <th>Categories</th>
               <th>Date Uploaded</th>
@@ -27,7 +29,10 @@
             <tbody>
               <?php foreach($resources as $resource){ ?> 
                 <tr>
-                  <td><?php echo $resource['title'];?></td>
+                  <td><?php echo $resource['resource_ID'];?></td>
+                  <td><?php echo ucfirst($resource['title']);?></td>
+                  <td><?php echo ucfirst($resource['meta_description']);?></td>
+                  <td><?php echo ucwords($resource['meta_keywords']);?></td>
                   <td>
                     <?php if($resource['type'] == '1'){?>
                       Blogs

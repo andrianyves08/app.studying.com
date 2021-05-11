@@ -32,7 +32,7 @@
             aria-haspopup="true" aria-expanded="false">
             <i class="fas fa-bell" id="notification_bell"></i>
           </a>
-          <div class="dropdown-menu dropdown-menu-lg-right dropdown-secondary" id="notifications">
+          <div class="dropdown-menu dropdown-menu-lg-right dropdown-secondary notifications" id="notifications" aria-labelledby="seen_notification">
           </div>
         </li>
         <li class="nav-item dropdown">
@@ -41,14 +41,16 @@
               My Modules</strong>
           </a>
           <div class="dropdown-menu dropdown-menu-right dropdown-default" aria-labelledby="navbarDropdownMenuLink" id="my_purchases">
-            
+            <?php foreach ($my_purchases as $my_purchase) { ?>
+              <a class="dropdown-item" href="<?php echo base_url();?>modules/<?php echo $my_purchase['slug'];?>"><?php echo $my_purchase['name'];?></a>
+            <?php } ?>
           </div>
         </li>
         <li class="nav-item">
           <a href="<?php echo base_url(); ?>messages" class="nav-link waves-effect blue-text">
            <strong>
            Messages</strong>
-          <?php if($unseen_chat > 0){ echo '<span class="badge badge-danger badge-pill">'.$unseen_chat.'</span>'; } ?>
+            <?php if($unseen_chat > 0){ echo '<span class="badge badge-danger badge-pill">'.$unseen_chat.'</span>'; } ?>
           </a>
         </li>
         <li class="nav-item dropdown">

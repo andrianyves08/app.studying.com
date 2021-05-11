@@ -1,24 +1,25 @@
 <main class="pt-5 mx-lg-5">
-<div class="container-fluid mt-5">
-  <section>
-    <div class="row mr-2 mb-4">
-      <div class="col-md-4 mb-4">
-        <div class="input-group mb-3 btn-group-sm justify-content-center">
-          <div class="input-group-prepend">
-            <button data-toggle="modal" data-target="#send_chat" class="btn btn-primary btn-sm m-0" type="button">Create a message</button>
-            <button data-toggle="modal" data-target="#create_group" class="btn btn-unique btn-sm m-0" type="button">Create a group</button>
+  <div class="container-fluid mt-5">
+    <section>
+      <div class="row justify-content-center mr-2 mb-4">
+        <div class="col-lg-4 mb-4">
+          <div class="input-group mb-3">
+            <input type="text" class="form-control form-control-sm" placeholder="Search Message" aria-describedby="button-addon4" id="search_user">
+            <div class="input-group-append" id="button-addon4">
+              <button class="btn btn-sm btn-primary m-0 px-3 py-2 z-depth-0 waves-effect" type="button" data-toggle="modal" data-target="#send_chat">Create a message</button>
+              <button class="btn btn-sm btn-secondary m-0 px-3 py-2 z-depth-0 waves-effect" type="button"  data-toggle="modal" data-target="#create_group">Create a group</button>
+            </div>
           </div>
-        </div>
-        <div class="card wide overflow-auto" id="my_friends" style="height: 600px;">
-        </div><!-- Card -->
-      </div> <!--Column-->
-      <div class="col-md-8">
-        <div class="card chat-room small-chat wide" id="messages" style="height: 600px;">
-        </div><!--Card-->
-      </div><!--Column-->
-    </div><!--Row-->
-  </section>
-</div><!--Contaier-->
+          <div class="card wide overflow-auto" id="my_friends" style="height: 750px;">
+          </div><!-- Card -->
+        </div> <!--Column-->
+        <div class="col-lg-8">
+          <div class="card chat-room small-chat wide" id="messages" style="height: 800px;">
+          </div><!--Card-->
+        </div><!--Column-->
+      </div><!--Row-->
+    </section>
+  </div><!--Contaier-->
 </main>
 <!-- Create Chat -->
 <div data-backdrop="static" class="modal fade" id="send_chat" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
@@ -101,7 +102,6 @@
     </div><!--Content-->
   </div>
 </div>
-<!-- View Members -->
 <!-- Add Members -->
 <div data-backdrop="static" class="modal fade" id="add_members" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
   aria-hidden="true">
@@ -127,16 +127,67 @@
     </div><!--Content-->
   </div>
 </div>
-<!-- Add Members -->
 <script type="text/javascript">
 $(document).ready(function(){
+  $("#search_user").on("keyup", function() {
+    var value = $(this).val().toLowerCase();
+    $("#my_friends .start_chat").filter(function() {
+      $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+    });
+  });
+
+  var limit = 10;
   fetch_user();
   friends();
+  get_user_status();
+ 
   setInterval(function(){
-    fetch_user();
     update_chat_history_data();
     update_group_chat_history_data();
-  }, 60000);
+    get_user_status();
+  }, 5000);
+  setTimeout(start, 1000);
+
+  function get_user_status(){
+    $.ajax({
+      type  : 'post',
+      url   : "<?=base_url()?>messages/get_users_status",
+      async : true,
+      dataType : 'json',
+      success : function(data){
+        var html = '';
+        var i;
+        for(i=0; i<data.length; i++){
+          var date = new Date(data[i].status);
+          var now = new Date();
+          var FIVE_MIN=1*60*1000;
+
+          // if one minute ago
+          if((now - new Date(date)) > FIVE_MIN) {
+            $('.last_login_'+data[i].user_ID).html(data[i].last_login);
+          } else {
+            $('.last_login_'+data[i].user_ID).html('<i class="fas fa-circle text-success"></i>');
+          }
+
+          if(data[i].count != 0){
+            $('.new_messages_'+data[i].user_ID).show();
+            $('.new_messages_'+data[i].user_ID).html(data[i].count);
+          } else {
+            $('.new_messages_'+data[i].user_ID).hide();
+          }
+
+        }
+      }
+    });
+  }
+
+  function start(){
+    var group_ID = 1;
+    var full_name = '#general';
+    limit = 10;
+    make_group_chat_dialog_box(1, full_name);
+    $('#message_header1').addClass("bg-light");
+  };
 
   function friends(){
     $.ajax({
@@ -148,7 +199,7 @@ $(document).ready(function(){
         var html = '';
         var i;
         for(i=0; i<data.length; i++){
-          html += '<option value='+data[i].usID+'>'+data[i].usFN+' '+data[i].usLN+'</option>';
+          html += '<option value='+data[i].user_ID+'>'+data[i].first_name+' '+data[i].last_name+'</option>';
         }
         $('#members').html(html);
       }
@@ -206,14 +257,13 @@ $(document).ready(function(){
           $('[name="email"]').val("");
           $('#create_message').val("");
           $('#send_chat').modal('hide');
-            fetch_user();
+          fetch_user();
         }
       }
     });
     return false;
   });
 
-  var limit = 10;
   $(document).on('click', '.start_chat', function(){
     var header = $(this).attr('id');
     var usID = $(this).data('id');
@@ -221,10 +271,8 @@ $(document).ready(function(){
     var last_name = $(this).data('last');
     limit = 10;
     make_chat_dialog_box(usID, first_name, last_name);
-    $('#message_header'+header).addClass("blue");
-    $('#message_header'+header).addClass("text-white");
-    $('.message_header').not("#message_header"+header).removeClass("blue"); 
-    $('.message_header').not("#message_header"+header).removeClass("text-white"); 
+    $('#message_header'+header).addClass("bg-light");
+    $('.message_header').not("#message_header"+header).removeClass("bg-light"); 
   });
 
   $(document).on('click', '.viewmore', function(){
@@ -252,7 +300,7 @@ $(document).ready(function(){
   $(document).on('click', '.send', function(){
     var to_user_id = $(this).data('sender-id');
     var chat_ID = $(this).data('chat-id');
-    var message = $('#message').val();
+    var message = CKEDITOR.instances['message'].getData();
     if(message != ''){
       $.ajax({
         url:"<?=base_url()?>messages/send_message",
@@ -262,12 +310,12 @@ $(document).ready(function(){
         data:{user_ID:to_user_id, chat_message:message, chat_ID:chat_ID},
         success:function(data) {
           toastr.success(' 10 Exp Gained!');
-          $('[name="message"]').val("");
           fetch_user_chat_history(to_user_id);
           fetch_user();
+          CKEDITOR.instances['message'].setData('');
           $(".replying").text('');
           $(".clear_replay").hide();
-          $(this).data("chat-id", '0');
+          $(".send").data("chat-id", 0);
         }
       })
     } else {
@@ -278,8 +326,9 @@ $(document).ready(function(){
   function make_chat_dialog_box(to_user_id, first_name, last_name) {
     var message_content = '<div class="card-header white d-flex justify-content-between p-2 fixed"><div class="heading d-flex justify-content-start"><div class="data"><p class="name mb-0"><strong>'+first_name+' '+last_name+'</strong></p></div></div><div class="icons grey-text"><a class="feature"></a></div></div><div class="my-custom-scrollbar overflow-auto p-3"><a><p class="text-center blue-text font-italic viewmore" data-user-id="'+to_user_id+'">View More</p></a><div class="chat-messages" id="chat-messages_'+to_user_id+'" data-touserid="'+to_user_id+'">';
     fetch_user_chat_history(to_user_id);
-    message_content += '</div></div><div class="card-footer text-muted white pt-1 pb-2 px-3" style="margin-top: auto;"><div class="d-flex justify-content-center"><div class="replying"></div><a class="clear_replay font-weight-bold red-text ml-5" style="display: none;">X</a></div><div class="d-flex"><textarea type="text" class="form-control" placeholder="Type a message..." name="message" id="message"></textarea><button class="btn btn-primary btn-sm send" data-sender-id="'+to_user_id+'" data-chat-id="0">Send</button></div></div>';
+    message_content += '</div></div><div class="card-footer white text-muted pt-1 pb-2 px-3" style="margin-top: auto;"><div class="d-flex justify-content-center"><div class="replying"></div><a class="clear_replay font-weight-bold red-text ml-5" style="display: none;">X</a></div><div id="message"></div><button class="btn btn-primary btn-sm send float-right" data-sender-id="'+to_user_id+'" data-chat-id="0">Send</button></div>';
     $('#messages').html(message_content);
+    createNewEditor();
   }
 
   function fetch_user_chat_history(to_user_id){
@@ -307,8 +356,8 @@ $(document).ready(function(){
         $(".group_view_more").text("Loading...");
       },
       success : function(data){
-         $('#chat_group_messages_'+group_ID).html(data);
-         $(".group_view_more").text("View More");
+        $('#chat_group_messages_'+group_ID).html(data);
+        $(".group_view_more").text("View More");
         if(!$.trim(data)) {
           $(".group_view_more").hide();
         }
@@ -341,8 +390,8 @@ $(document).ready(function(){
   });
 
   $(document).on('click', '.group_send', function(){
-    var group_ID = $(this).attr('id');
-    var message = $('#group_message').val();
+    var group_ID = $(this).data('group-id');
+    var message = CKEDITOR.instances['group_message'].getData();
     var chat_ID = $(this).data('chat-id');
     if(message != ''){
       $.ajax({
@@ -353,23 +402,24 @@ $(document).ready(function(){
         data:{group_ID:group_ID, chat_message:message, chat_ID:chat_ID},
         success:function(data) {
           toastr.success(' 10 Exp Gained!');
-          $('[name="group_message"]').val("");
+          CKEDITOR.instances['group_message'].setData('');
           fetch_group_chat_history(group_ID);
           $(".replying").text('');
           $(".clear_replay").hide();
-          $(this).data("chat-id", '0');
+          $(".group_send").data("chat-id", 0);
         }
       })
     } else {
-     toastr.error('Enter a message');
+      toastr.error('Enter a message');
     }
   });
 
   function make_group_chat_dialog_box(group_ID, group_name) {
     var group_message_content = '<div class="card-header white d-flex justify-content-between p-2 fixed"><div class="heading d-flex justify-content-start"><div class="data"><p class="name mb-0"><strong>'+group_name+'</strong></p></div></div><div class="icons grey-text"><a class="add_new_member" id="'+group_ID+'"><i class="fas fa-user-plus mr-2"></i></a><a class="show_list" id="'+group_ID+'"><i class="fas fa-users mr-2"></i></a></div></div><div class="my-custom-scrollbar overflow-auto p-3"><a><p class="text-center blue-text font-italic group_view_more" data-group-id="'+group_ID+'">View More</p></a><div class="chat_group_messages" id="chat_group_messages_'+group_ID+'" data-group-id="'+group_ID+'">';
     fetch_group_chat_history(group_ID);
-    group_message_content += '</div></div><div class="card-footer text-muted white pt-1 pb-2 px-3" style="margin-top: auto;"><div class="d-flex justify-content-center"><div class="replying"></div><a class="clear_replay font-weight-bold red-text ml-5" style="display: none;">X</a></div><div class="d-flex"><textarea type="text" class="form-control" placeholder="Type a message..." name="group_message" id="group_message"></textarea><button class="btn btn-primary btn-sm group_send" id="'+group_ID+'" data-chat-id="0">Send</button></div></div>';
+    group_message_content += '</div></div><div class="card-footer text-muted white pt-1 pb-2 px-3" style="margin-top: auto;"><div class="d-flex justify-content-center"><div class="replying"></div><a class="clear_replay font-weight-bold red-text ml-5" style="display: none;">X</a></div><div id="group_message"></div><button class="btn btn-primary btn-sm group_send float-right" data-group-id="'+group_ID+'" data-chat-id="0">Send</button></div>';
     $('#messages').html(group_message_content);
+    createGroupNewEditor();
   }
 
   $(document).on('click', '.start_group_chat', function(){
@@ -378,10 +428,8 @@ $(document).ready(function(){
     var full_name = $(this).data('name');
     limit = 10;
     make_group_chat_dialog_box(group_ID, full_name);
-    $('#message_header'+header).addClass("blue");
-    $('#message_header'+header).addClass("text-white");
-    $('.message_header').not("#message_header"+header).removeClass("blue"); 
-    $('.message_header').not("#message_header"+header).removeClass("text-white"); 
+    $('#message_header'+header).addClass("bg-light");
+    $('.message_header').not("#message_header"+header).removeClass("bg-light");
   });
 
   function fetch_group_chat_history(group_ID){
@@ -449,7 +497,7 @@ $(document).ready(function(){
     var group = $('[name="group"]').val();
     $.ajax({
       type : "POST",
-       url  : "<?=base_url()?>messages/add_member",
+      url  : "<?=base_url()?>messages/add_member",
       dataType : "JSON",
       data : {id:email, group_id: group},
       success: function(data){
@@ -459,5 +507,97 @@ $(document).ready(function(){
     });
     return false;
   });
+
+  <?php 
+    $all = array();
+    foreach ($all_users as $user) {
+      if(!empty($user["first_name"]) || !empty($user["first_name"])){
+        if($my_id != $user["id"]) {
+          $all[] = array(
+            'id' =>  $user["id"],
+            'fullname' =>  ucwords($user["first_name"]).' '.ucwords($user["last_name"]),
+            'avatar' => 'assets/img/users/'.$user['image']
+          );
+        }
+      }
+    }
+  ?>
+  var users = <?php echo json_encode($all); ?>,
+  tags = [];
+
+  function createNewEditor() {
+    var element = document.createElement("textarea");
+    $(element).attr('name', 'message').appendTo('#message');
+    return CKEDITOR.replace(element, {
+      plugins: 'emoji,basicstyles,undo,wysiwygarea,toolbar,pastetext',
+      height: 60,
+      width: '99%',
+      toolbar: [{
+          name: 'document',
+          items: ['Undo', 'Redo']
+        },
+        {
+          name: 'links',
+          items: ['EmojiPanel']
+        }
+      ],
+      mentions: [{
+          feed: dataFeed,
+          itemTemplate: '<li data-id="{id}">' +
+            '<img class="photo" src="{avatar}" style="width: 25px;"/>' +
+            '<span class="fullname"> {fullname}</span>' +
+            '</li>',
+          outputTemplate: '<a href="./user-profile/{id}">@{fullname}</a><span>&nbsp;</span>',
+          minChars: 0
+        }
+      ]
+    });
+  }
+
+  function createGroupNewEditor() {
+    var element = document.createElement("textarea");
+    $(element).attr('name', 'group_message').appendTo('#group_message');
+    return CKEDITOR.replace(element, {
+      plugins: 'mentions,emoji,basicstyles,undo,link,wysiwygarea,toolbar,pastetext',
+      contentsCss: [
+        'http://cdn.ckeditor.com/4.16.0/full-all/contents.css',
+        'https://ckeditor.com/docs/ckeditor4/4.16.0/examples/assets/mentions/contents.css'
+      ],
+      height: 60,
+      width: '99%',
+      toolbar: [{
+          name: 'document',
+          items: ['Undo', 'Redo']
+        },
+        {
+          name: 'links',
+          items: ['EmojiPanel', 'Link', 'Unlink']
+        }
+      ],
+      mentions: [{
+          feed: dataFeed,
+          itemTemplate: '<li data-id="{id}">' +
+            '<img class="photo" src="{avatar}" style="width: 25px;"/>' +
+            '<span class="fullname"> {fullname}</span>' +
+            '</li>',
+          outputTemplate: '<a href="./user-profile/{id}">@{fullname}</a><span>&nbsp;</span>',
+          minChars: 0
+        }
+      ]
+    });
+  }
+
+  function dataFeed(opts, callback) {
+    var matchProperty = 'fullname',
+      data = users.filter(function(item) {
+        return item[matchProperty].toLowerCase().indexOf(opts.query.toLowerCase()) > -1
+      });
+    data = data.sort(function(a, b) {
+      return a[matchProperty].localeCompare(b[matchProperty], undefined, {
+        sensitivity: 'accent'
+      });
+    });
+    callback(data);
+  }
 });
 </script>

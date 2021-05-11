@@ -25,7 +25,6 @@ class Faq extends CI_Controller {
 		$this->load->view('admin/faq', $data);
 		$this->load->view('templates/admin/footer');
         $this->load->view('templates/admin/scripts');
-        $this->load->view('templates/admin/page_scripts/default');
 	}
 
 	public function edit_faq($id){
@@ -45,7 +44,6 @@ class Faq extends CI_Controller {
 		$this->load->view('admin/faq-edit', $data);
 		$this->load->view('templates/admin/footer');
 		$this->load->view('templates/admin/scripts');
-		$this->load->view('templates/admin/page_scripts/default');
 	}
 
 	function create() {

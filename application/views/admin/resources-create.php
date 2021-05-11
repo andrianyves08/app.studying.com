@@ -12,7 +12,6 @@
     </div>
   </div>
   <!-- Heading -->
-
   <div class="row">
     <div class="col-md-12">
       <div class="card">
@@ -23,8 +22,13 @@
             <input type="text" class="form-control" name="title" id="title" required>
           </div>
           <div class="form-group">
-            <label for="formGroupExampleInput">* Short Description</label>
-            <input type="text" class="form-control" name="description" id="description" required>
+            <label for="formGroupExampleInput">* Meta Description</label>
+            <input type="text" class="form-control" name="meta_description" id="meta_description" required>
+          </div>
+          <div class="form-group">
+            <label for="formGroupExampleInput">* Meta Keywords</label>
+             <h6 class="red-text">NOTE: Comma separated</h6>
+            <input type="text" class="form-control" name="meta_keywords" id="meta_keywords" required>
           </div>
           <div class="form-row mb-4">
             <div class="col">
@@ -51,14 +55,7 @@
               <a class="btn btn-md btn-outline-primary m-0 px-3 py-2 z-depth-0 waves-effect" type="button" data-toggle="modal" data-target="#create_category">Create New Category</a>
             </div>
           </div>
-          <div class="input-group mb-4">
-            <select class="browser-default custom-select select2" name="select_keyword[]" id="select_keyword" multiple="multiple" data-placeholder="Select a Keyword" required>
-            </select>
-            <div class="input-group-append">
-              <a class="btn btn-md btn-outline-success m-0 px-3 py-2 z-depth-0 waves-effect" type="button" data-toggle="modal" data-target="#create_keyword">Create New Keyword</a>
-            </div>
-          </div>
-          <label for="image">Upload Files</label>
+          <label for="image">Resource Files</label>
           <h6 class="red-text">NOTE: You can select multiple files except folders</h6>
           <div class="input-group mb-4">
             <div class="custom-file">
@@ -100,36 +97,9 @@
   </div>
 </div>
 <!-- Add Members -->
-
-<!-- Add Members -->
-<div data-backdrop="static" class="modal fade" id="create_keyword" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-  aria-hidden="true">
-  <div class="modal-dialog modal-md modal-notify modal-success" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title w-100" id="myModalLabel">Create New Keyword</h4>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-        <label for="formGroupExampleInput">* Name</label>
-        <input type="text" class="form-control" name="new_keyword" id="new_keyword">
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
-        <button class="btn btn-primary waves-effect btn-sm float-right" type="submit" id="add_keyword">Create</button>
-      </div>
-    </div>
-  </div>
-</div>
-<!-- Add Members -->
 <script>
 $(document).ready(function(){
   get_category();
-  get_keyword();
   $('.textarea').summernote({
     height: "300px",
     callbacks: {
@@ -185,23 +155,6 @@ $(document).ready(function(){
     });
   }
 
-  function get_keyword(){
-    $.ajax({
-      type  : 'POST',
-      url   : "<?=base_url()?>resources/get_keyword",
-      async : true,
-      dataType : 'json',
-      success : function(data){
-        var html = '';
-        var i;
-        for(i=0; i<data.length; i++){
-          html += '<option value='+data[i].id+'>'+data[i].name+'</option>';
-        }
-        $('#select_keyword').html(html);
-      }
-    });
-  }
-
   //Add member
   $('#add_category').on('click',function(){
     var category = $('#new_category').val();
@@ -218,26 +171,6 @@ $(document).ready(function(){
           $('#create_category').modal('hide');
         }
         get_category();
-      }
-    });
-    return false;
-  });
-
-  $('#add_keyword').on('click',function(){
-    var keyword = $('#new_keyword').val();
-    $.ajax({
-      type : "POST",
-      url  : "<?=base_url()?>resources/create_keyword",
-      dataType : "JSON",
-      data : {name:keyword},
-      success: function(data){
-        if(data.error){
-          toastr.error(data.message);
-        } else {
-          toastr.success('keyword created');
-          $('#create_keyword').modal('hide');
-        }
-        get_keyword();
       }
     });
     return false;

@@ -17,15 +17,20 @@
     <div class="col-md-12">
       <div class="card">
         <div class="card-body">
-          <?php echo form_open_multipart('resources/update_content'); ?>
+          <?php echo form_open_multipart('resources/update'); ?>
             <div class="form-group">
               <label for="formGroupExampleInput">* Title</label>
-              <input type="text" class="form-control" name="title" id="title" value="<?php echo $resource['title']; ?>">
+              <input type="text" class="form-control" name="title" id="title" value="<?php echo ucfirst($resource['title']); ?>">
               <input type="hidden" class="form-control" name="resource_ID" id="resource_ID" value="<?php echo $resource['resources_ID']; ?>">
             </div>
             <div class="form-group">
-              <label for="formGroupExampleInput">* Short Description</label>
-              <input type="text" class="form-control" name="description" id="description" value="<?php echo ucfirst($resource['description']); ?>">
+              <label for="formGroupExampleInput">* Meta Description</label>
+              <input type="text" class="form-control" name="meta_description" id="meta_description" value="<?php echo ucfirst($resource['meta_description']); ?>">
+            </div>
+            <div class="form-group">
+              <label for="formGroupExampleInput">* Meta Keywords</label>
+               <h6 class="red-text">NOTE: Comma separated</h6>
+              <input type="text" class="form-control" name="meta_keywords" id="meta_keywords" value="<?php echo ucwords($resource['meta_keywords']); ?>">
             </div>
             <div class="form-row mb-4">
               <div class="col">
@@ -58,7 +63,7 @@
                     <option value="<?php echo ucwords($resource_categor['category_ID']); ?>" selected><?php echo ucwords($resource_categor['category_name']); ?></option>
                   <?php } ?>
                 <?php } ?>
-                 <?php foreach($all_categories as $all_category){ ?> 
+                <?php foreach($all_categories as $all_category){ ?> 
                     <option value="<?php echo ucwords($all_category['id']); ?>"><?php echo ucwords($all_category['name']); ?></option>
                 <?php } ?>
               </select>
@@ -66,6 +71,7 @@
                 <a class="btn btn-md btn-outline-mdb-color m-0 px-3 py-2 z-depth-0 waves-effect" type="button" data-toggle="modal" data-target="#create_category">Create New Category</a>
               </div>
             </div>
+            <label for="resource_file">Resource Files</label>
             <h6 class="red-text">NOTE: You can select multiple files except folders</h6>
             <div class="input-group mb-4">
               <div class="custom-file">

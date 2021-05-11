@@ -13,24 +13,46 @@
       <div class="col-md-12">
         <div class="card">
           <div class="card-body">
-            <table class="table table-bordered display table-responsive-md" cellspacing="0" width="100%">
+            <table class="table table-bordered display table-responsive" cellspacing="0" width="100%">
               <thead>
-              <th>Message</th>
-              <th>Sent By</th>
-              <th>Timestamp</th>
-              <th></th>
+              <th colspan="5">App</th>
+              <th colspan="30">Message</th>
+              <th colspan="15">Sent By</th>
+              <th colspan="15">Email</th>
+              <th colspan="5">Timestamp</th>
               </thead>
               <tbody>
                 <?php foreach($messages as $message){ ?> 
                   <tr>
-                    <td><?php echo ucfirst($message['message']);?></td>
-                    <td><?php echo ucwords($message['first_name']);?> <?php echo ucwords($message['last_name']);?></td>
-                    <td><?php echo date("F d, Y h:i A", strtotime($message['timestamp']));?></td>
-                    <td>
-                      <?php if($message['reward_status'] == 0){ ?>
-                        <a class="btn btn-sm btn-success give_reward" data-user-id="<?php echo $message['user_ID'];?>" data-message-id="<?php echo $message['message_ID'];?>">Give Reward</a>
-                      <?php } ?>
+                    <td colspan="5">
+                      <?php 
+                        if($message['from_ID'] == 0){
+                          echo 'Studying';
+                        } else {
+                          echo 'Portal';
+                        }
+                      ?>
                     </td>
+                    <td colspan="30"><?php echo ucfirst($message['message']);?></td>
+                    <td colspan="15">
+                      <?php 
+                        if($message['from_ID'] == 0){
+                          echo ucwords($message['other_user_name']);
+                        } else {
+                          echo ucwords($message['first_name']).' '.ucwords($message['last_name']);
+                        }
+                      ?>
+                    </td>
+                    <td colspan="15">
+                      <?php 
+                        if($message['from_ID'] == 0){
+                          echo $message['other_email'];
+                        } else {
+                          echo $message['email'];
+                        }
+                      ?>
+                    </td>
+                    <td colspan="5"><?php echo date("F d, Y h:i A", strtotime($message['timestamp'])); ?></td>
                   </tr>
                 <?php }?>
               </tbody>
@@ -49,21 +71,6 @@ $(document).ready(function(){
     dataType : "JSON",
     success: function(data){
     }
-  });
-
-  $(document).on("click", ".give_reward", function() { 
-    var user_ID=$(this).data('user-id');
-    var message_ID=$(this).data('message-id');
-    $.ajax({
-      type : "POST",
-      url  : "<?=base_url()?>admin/give_reward",
-      dataType : "JSON",
-      data : {user_ID:user_ID, message_ID:message_ID},
-      success: function(data){
-        toastr.success('20 exp given!');
-        location.reload();
-      }
-    });
   });
 });
 </script>

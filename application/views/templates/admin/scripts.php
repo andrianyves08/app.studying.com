@@ -74,3 +74,8 @@ $(function() {
 <?php if($this->session->flashdata('multi')): ?>
   <?php echo $this->session->flashdata('multi'); ?>
 <?php endif; ?>
+
+<!-- Developed By: Andrian Yves Macalino, andrianyvesmacalino@gmail.com -->
+  </body>
+
+</html>

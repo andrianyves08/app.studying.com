@@ -29,7 +29,6 @@ class Courses extends CI_Controller {
 		$this->load->view('admin/'.$page, $data);
         $this->load->view('templates/admin/footer');
 		$this->load->view('templates/admin/scripts');
-        $this->load->view('templates/admin/page_scripts/default');
 	}
 
 	public function create_course($slug){
@@ -51,8 +50,6 @@ class Courses extends CI_Controller {
 		$this->load->view('admin/course-create', $data);
 		$this->load->view('templates/admin/footer');
 		$this->load->view('templates/admin/scripts');
-		$this->load->view('templates/admin/page_scripts/course-create');
-       
 	}
 
 	public function all_contents() {
@@ -71,11 +68,9 @@ class Courses extends CI_Controller {
 		$this->load->view('admin/contents', $data);
         $this->load->view('templates/admin/footer');
 		$this->load->view('templates/admin/scripts');
-        $this->load->view('templates/admin/page_scripts/default');
 	}
 
 	function sort_course(){
-		$this->delete_cache();
 		$create = $this->course_model->sort_course($this->input->post('where'), $this->input->post('row'));
 
 		echo json_encode($create);
@@ -97,7 +92,6 @@ class Courses extends CI_Controller {
 	}
 
 	function create_title() {
-		$this->delete_cache();
 
 		$this->course_model->create_course($this->input->post('courseName'));
 		$slug = url_title($this->input->post('courseName'));
@@ -112,7 +106,7 @@ class Courses extends CI_Controller {
 		}
 		$data = $this->course_model->update_course_title($id, $this->input->post('edittitle'), $status);
 		if($data){
-			$this->delete_cache();
+
 			$this->session->set_flashdata('success', 'Module updated Successfully');
 		}
 		redirect('admin/modules');
@@ -129,7 +123,7 @@ class Courses extends CI_Controller {
 			$data = $this->course_model->create_section($this->input->post('section_name'), $this->input->post('cor_id'), $slug);
 
 			if($data){
-				$this->delete_cache();
+	
 				$this->session->set_flashdata('success', 'Section Created Successfully');
 			} else {
 				$this->session->set_flashdata('error', 'Section name already exist.');
@@ -159,7 +153,7 @@ class Courses extends CI_Controller {
 			$this->session->set_flashdata('multi',validation_errors());
 	        echo json_encode($data);
 	    } else {
-	    	$this->delete_cache();
+	  
 			$create = $this->course_model->update_section($this->input->post('update_sec_name'), $this->input->post('update_sec_id'), $this->input->post('course_slug'), $this->input->post('status'));
 			if(!$create){
 				$data = array(
@@ -176,13 +170,11 @@ class Courses extends CI_Controller {
 	}
 
 	function delete_section() {
-		$this->delete_cache();
 		$data = $this->course_model->delete_section($this->input->post('id'), $this->input->post('course_slug'));
 		echo json_encode($data);
 	}
 
 	function sort_section(){
-		$this->delete_cache();
 		$id = $this->input->post('sec_order_id');
 		for($count = 0;  $count < count($id); $count++){
 			$row = $count+1;
@@ -213,7 +205,7 @@ class Courses extends CI_Controller {
 	    } else {
 			$create = $this->course_model->create_lesson($this->input->post('secID'), $this->input->post('lesson_name'), $slug);
 			if($create){
-				$this->delete_cache();
+	
 				$this->session->set_flashdata('success', 'Lesson Created Successfully');
 			} else {
 				$this->session->set_flashdata('error', 'Lesson name already exist');
@@ -238,7 +230,7 @@ class Courses extends CI_Controller {
 				'message' => 'Lesson name already exist.'
 				);
 			} else {
-				$this->delete_cache();
+	
 				$data = array(
 				'success' => true
 				);
@@ -248,13 +240,11 @@ class Courses extends CI_Controller {
 	}
 
 	function delete_lesson() {
-		$this->delete_cache();
 		$data = $this->course_model->delete_lesson(NULL,$this->input->post('id'), $this->input->post('course_slug'));
 		echo json_encode($data);
 	}
 
 	function sort_lesson(){
-		$this->delete_cache();
 		$id = $this->input->post('les_order_id');
 		for($count = 0;  $count < count($id); $count++){
 			$row = $count+1;
@@ -288,7 +278,7 @@ class Courses extends CI_Controller {
 		    		}
 			        $create = $this->course_model->create_content($lesson_ID, $this->input->post('contentitle')[$i], $content_url, $this->input->post('content')[$i], $slug);
 					if($create){
-						$this->delete_cache();
+			
 						$this->session->set_flashdata('success', 'Content created successfully');
 					} else {
 						$this->session->set_flashdata('error', 'Content Title already Exist.');
@@ -312,7 +302,6 @@ class Courses extends CI_Controller {
 
 
 	function delete_content() {
-		$this->delete_cache();
 		$data = $this->course_model->delete_content(NULL, $this->input->post('id'), $this->input->post('course_slug'));
 		echo json_encode($data);
 	}
@@ -367,7 +356,7 @@ class Courses extends CI_Controller {
 			$create = $this->course_model->update_content($this->input->post('update_con_id'), $this->input->post('update_con_name'), $content_url, $thumbnail, $this->input->post('update_cont_part'), $this->input->post('course_slug'), $this->input->post('content_status'));
 
 			if($create){
-				$this->delete_cache();
+	
 				$this->session->set_flashdata('success', 'Content updated successfully');
 			} else {
 				$this->session->set_flashdata('error', 'Content Title already Exist.');
@@ -417,7 +406,7 @@ class Courses extends CI_Controller {
 			$create = $this->course_model->update_content_by_id($this->input->post('update_con_id'), $this->input->post('update_con_name'), $this->input->post('update_con_url'), $thumbnail, $this->input->post('update_cont_part'));
 
 			if($create){
-				$this->delete_cache();
+	
 				$this->session->set_flashdata('success', 'Content updated successfully');
 			} else {
 				$this->session->set_flashdata('error', 'Content Title already Exist.');
@@ -454,8 +443,25 @@ class Courses extends CI_Controller {
 		}
 	}
 
-	function delete_cache() {
-    	$this->load->helper('cache');
-    	delete_all_cache();
+	function submit_rating(){
+		$data = $this->course_model->submit_rating($this->input->post('content_ID'), $this->input->post('rating'), $this->input->post('feedback'), $this->session->userdata('user_id'));
+
+		echo json_encode($data);
+	}
+
+	function get_content_ratings(){
+		$data = $this->course_model->get_content_ratings();
+		$total = array();
+
+		foreach ($data as $row) {
+			$average = ($row['sum'] / $row['total']);
+			
+			$total[] = [
+				'content_ID' => $row['content_ID'],
+				'average' => (round($average * 2) / 2)
+			];
+		}
+
+		echo json_encode($total);
 	}
 }

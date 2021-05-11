@@ -38,7 +38,6 @@ class Rated_products extends CI_Controller {
 
         $data['product'] = $this->rated_product_model->get_all_products(NULL, 0, $id);
         $data['images'] = $this->rated_product_model->get_images($id);
-        $data['categories'] = $this->rated_product_model->get_product_categories($id);
 
         $this->load->view('templates/admin/header', $data);
         $this->load->view('templates/admin/nav', $data);
@@ -101,7 +100,7 @@ class Rated_products extends CI_Controller {
                 }
             }
 
-            $create=$this->rated_product_model->create($this->input->post('name'), $this->input->post('description'), $this->input->post('rating'), $this->input->post('category'), $photos);
+            $create=$this->rated_product_model->create($this->input->post('name'), $this->input->post('description'), $this->input->post('rating'), $this->input->post('url'), $photos);
 
             if($create){
                 $this->session->set_flashdata('success', 'Product created successfully');
@@ -123,7 +122,7 @@ class Rated_products extends CI_Controller {
         } else {
             rename("./assets/img/rated-products/".url_title($this->input->post('old_name')), "./assets/img/rated-products/".url_title($this->input->post('name')));
 
-            $create=$this->rated_product_model->update($this->input->post('product_ID'), $this->input->post('name'), $this->input->post('description'), $this->input->post('rating'), $this->input->post('category'));
+            $create=$this->rated_product_model->update($this->input->post('product_ID'), $this->input->post('name'), $this->input->post('description'), $this->input->post('rating'), $this->input->post('url'));
 
             if($create){
                 $this->session->set_flashdata('success', 'Product created successfully');
@@ -134,36 +133,8 @@ class Rated_products extends CI_Controller {
         }
     }
 
-    function get_category() {
-        $data = $this->rated_product_model->get_categories();
-        echo json_encode($data);
-    }
-
     function get_images() {
         $data = $this->rated_product_model->get_images($this->input->post('id'));
-        echo json_encode($data);
-    }
-
-    function get_product_categories() {
-        $data = $this->rated_product_model->get_product_categories($this->input->post('id'));
-        echo json_encode($data);
-    }
-
-    function create_category() {
-        if(empty($this->input->post('name'))){
-            $data = array(
-                'error' => true,
-                'message' => 'Category name required'
-            );
-        } else {
-            $data = $this->rated_product_model->create_category($this->input->post('name'), $this->input->post('type'));
-            if(!$data){
-                $data = array(
-                    'error' => true,
-                    'message' => 'Category name already exist!'
-                );
-            }
-        }
         echo json_encode($data);
     }
 
@@ -214,7 +185,7 @@ class Rated_products extends CI_Controller {
     }
 
     function load_more() {
-        $products = $this->rated_product_model->get_all_products(10, $this->input->post('start'), FALSE);
+        $products = $this->rated_product_model->search_products(10, $this->input->post('start'), $this->input->post('product_name'));
         $images = $this->rated_product_model->get_images();
         $output = '';
 

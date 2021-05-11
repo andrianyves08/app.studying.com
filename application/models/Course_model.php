@@ -196,7 +196,6 @@
 		}		
 	}
 
-
 	public function get_course_content($slug){
 		$query = $this->db->get_where('course', array('slug' => $slug));
 		return $query->row_array();
@@ -599,6 +598,7 @@
     	if($section_slug != NULL){
     		$this->db->where('course_section.slug', $section_slug);
     	}
+    	$this->db->group_by('users_programs.program_ID');
     	$query = $this->db->get('course');
     	return $query->row_array();
 	}
@@ -690,5 +690,41 @@
 		    $this->db->trans_commit();
 		    return true;
 		}
+	}
+
+	public function submit_rating($content_ID, $rating, $feedback, $user_ID){
+		$this->db->trans_begin();
+
+		$data = array(
+			'content_ID' => $content_ID,
+			'user_ID' => $user_ID,
+			'rating' => $rating,
+			'feedback' => $feedback
+		);
+		$this->db->insert('course_section_lesson_content_reviews', $data);
+
+		if ($this->db->trans_status() === FALSE){
+		    $this->db->trans_rollback();
+		    return false;
+		} else{
+		    $this->db->trans_commit();
+		    return true;
+		}
+	}
+
+	public function get_content_ratings($user_ID = FALSE){
+		if($user_ID === FALSE){
+			$this->db->select('count(content_ID) AS total, content_ID, sum(rating) as sum');
+			$this->db->join('course_section_lesson_content', 'course_section_lesson_content.id = course_section_lesson_content_reviews.content_ID');
+			$this->db->join('course_section_lesson', 'course_section_lesson.id = course_section_lesson_content.lesson_ID');
+    		$this->db->join('course_section', 'course_section.id = course_section_lesson.section_ID');
+    		$this->db->where('course_section.slug', $this->input->post('section_slug'));
+	    	$this->db->group_by('content_ID');	
+    		$query = $this->db->get('course_section_lesson_content_reviews');
+			return $query->result_array();
+		}
+
+		$query = $this->db->get_where('course_section_lesson_content_reviews', array('user_ID' => $user_ID));
+		return $query->result_array();
 	}
 }

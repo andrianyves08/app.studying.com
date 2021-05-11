@@ -8,29 +8,40 @@ class Messages extends CI_Controller {
 		$this->load->library('upload');
 	}
 
+	public function convert($str, $target='_blank') {
+        if ($target) {
+	        $target = ' target="'.$target.'"';
+	    } else {
+	        $target = '';
+	    }
+	    // find and replace link
+	    $str = preg_replace('@((https?://)?([-\w]+\.[-\w\.]+)+\w(:\d+)?(/([-\w/_\.~]*(\?\S+)?)?)*)@', '<a href="$1" '.$target.'>$1</a>', $str);
+	    // add "http://" if not set
+	    $str = preg_replace('/<a\s[^>]*href\s*=\s*"((?!https?:\/\/)[^"]*)"[^>]*>/i', '<a href="http://$1" '.$target.'>', $str);
+	    return $str;
+    }
+
 	function check_session(){
 		if(!$this->session->userdata('user_logged_in')){
 			redirect('login');
 		}
-	}	
-	
-	public function index(){
-		$this->check_session();
-		$page = 'messages';
-		$data['title'] = ucfirst($page);
-		$data['settings'] = $this->settings_model->get_settings();
-		$data['my_info'] = $this->user_model->get_users($this->session->userdata('email'));
-		$data['next_level'] = $this->user_model->next_level($data['my_info']['level']);
-		$data['music_status'] = $this->user_model->get_music_status($this->session->userdata('user_id'));
-		$data['unseen_chat'] = $this->messages_model->total_message_unseen($this->session->userdata('user_id'));
-		$data['all_users']  = $this->messages_model->all_users();
-		$data['my_id'] = $this->session->userdata('user_id');
+	}
 
-		$this->load->view('templates/header', $data);
-        $this->load->view('templates/nav', $data);
-		$this->load->view('pages/'.$page, $data);
-		$this->load->view('templates/footer');
-		$this->load->view('templates/scripts');
+	function get_users_status() {
+		$data = $this->messages_model->get_users($this->session->userdata('user_id'));
+		$total = array();
+
+		foreach ($data as $row) {
+			$count = $this->messages_model->message_unseen($this->session->userdata('user_id'), $row['user_ID']);
+			$total[] = [
+				'user_ID' => $row['user_ID'],
+				'count' => $count,
+				'status' => $this->change_timezone($row['last_login']),
+				'last_login' => $this->changetimefromUTC($row['last_login'])
+			];
+		}
+
+		echo json_encode($total);
 	}
 
 	function get_users() {
@@ -44,23 +55,9 @@ class Messages extends CI_Controller {
 		}
 
 		foreach($data as $row){
-			$count = $this->messages_model->message_unseen($this->session->userdata('user_id'), $row['usID']);
-			if($count > 0){
-				$total = '<span class="badge badge-danger badge-pill ml-4">'.$count.'</span>';
-			} else {
-				$total = NULL;
+			if($row['user_ID'] != $this->session->userdata('user_id')){
+				$output .= '<a class="start_chat" id="'.$id.'" data-id="'.$row['user_ID'].'" data-name="'.ucwords($row['first_name']).'" data-last="'.ucwords($row['last_name']).'"><div class="card-body d-flex flex-row message_header" id="message_header'.$id.'"><img src="'.base_url().'assets/img/users/'.$row['usImg'].'" class="rounded-circle mr-2 chat-mes-id-2" alt="avatar" style="height: 50px;width: 50px;"><div><h6 class="user_names">'.ucwords($row['first_name']).' '.ucwords($row['last_name']).' <span class="badge badge-danger badge-pill ml-2 new_messages_'.$row['user_ID'].'"></span></h6><div class="user_status"></div><img src="'.base_url().'assets/img/'.$row['level_image'].'" class="rounded-circle" height="25px" width="25px" alt="avatar"> Level '.ucfirst($row['usLvl']).'<span class="ml-2 text-muted last_login_'.$row['user_ID'].'" style="font-size: 12px;"></span></div></div></a>';
 			}
-
-			if($row['last'] == 0){
-				$stat = 'text-danger';
-			} else {
-				$stat = 'text-success';
-			}
-
-			if($row['usID'] != $this->session->userdata('user_id')){
-				$output .= '<a class="start_chat" id="'.$id.'" data-id="'.$row['usID'].'" data-name="'.ucwords($row['usFN']).'" data-last="'.ucwords($row['usLN']).'"><div class="card-body d-flex flex-row message_header" id="message_header'.$id.'"><img src="'.base_url().'assets/img/users/'.$row['usImg'].'" class="mr-2 chat-mes-id-2" alt="avatar" style="height: 50px;width: 50px;"><div><div class="card-title font-weight-bold "><h6><i class="fas fa-circle mr-2 '.$stat.'"></i> '.ucwords($row['usFN']).' '.ucwords($row['usLN']).'</h6></div><p class="card-text"><img src="'.base_url().'assets/img/'.$row['level_image'].'" class="rounded-circle" height="25px" width="25px" alt="avatar"> Level '.ucfirst($row['usLvl']).' '.$total.'</p></div></div></a>';
-			}
-			
 			$id++;
 		}
 		$output .= '';
@@ -72,9 +69,51 @@ class Messages extends CI_Controller {
 		echo json_encode($data);
 	}
 
+	function change_timezone($time, $full = FALSE) {
+		$data = $this->user_model->get_users($this->session->userdata('user_id'));
+
+		$changetime = new DateTime($time, new DateTimeZone('UTC'));
+	    $changetime->setTimezone(new DateTimeZone($data['timezone']));
+	    return $changetime->format('M j, Y h:i A');
+	}
+
+	function changetimefromUTC($time, $full = FALSE) {
+		$data = $this->user_model->get_users($this->session->userdata('user_id'));
+
+		$now = new DateTime;
+	    $ago = new DateTime($time, new DateTimeZone('UTC'));
+	    $now->setTimezone(new DateTimeZone($data['timezone']));
+	    $ago->setTimezone(new DateTimeZone($data['timezone']));
+
+	    $diff = $now->diff($ago);
+
+	    $diff->w = floor($diff->d / 7);
+	    $diff->d -= $diff->w * 7;
+
+	    $string = array(
+	        'y' => 'year',
+	        'm' => 'month',
+	        'w' => 'week',
+	        'd' => 'day',
+	        'h' => 'hour',
+	        'i' => 'minute',
+	        's' => 'second',
+	    );
+	    foreach ($string as $k => &$v) {
+	      if ($diff->$k) {
+	        $v = $diff->$k . ' ' . $v . ($diff->$k > 1 ? 's' : '');
+	      } else {
+	        unset($string[$k]);
+	      }
+	    }
+
+	    if (!$full) $string = array_slice($string, 0, 1);
+	    return $string ? implode(', ', $string) . ' ago' : 'just now';
+	}
+
 	function get_messages() {
 		$user = $this->messages_model->messages($this->input->post('limit'), $this->session->userdata('user_id'), $this->input->post('user_ID'));
-		
+
 		$max = count($user);
 		$output = '';
 
@@ -85,38 +124,38 @@ class Messages extends CI_Controller {
 			if($row['fromID'] == $this->session->userdata('user_id')){
 				$output .= '<div class="d-flex justify-content-end align-items-center">';
 				if($row['mesStat'] == '2'){
-					$output .= '<div class="card border border-light bg-white rounded-pill w-50 float-right z-depth-0 mb-1 last"><div class="card-body"><p class="card-text text-black font-italic">This message has been removed.</p></div></div>';
+					$output .= '<div class="card bg-white rounded-pill w-50 text-right z-depth-0 mb-1 last"><div class="card-body"><p class="card-text dark-text font-italic">You removed this message.</p></div></div>';
 				} else {
-					if (strtotime($row['mesSent'] > strtotime("-20 minutes"))) {
-					 	$output .='<div class="card bg-primary rounded w-50 float-right z-depth-0 mb-1 last"><div class="card-body p-2"><p class="card-text text-white" style="font-size: 16px;">'.$row['chat'].'</p></div><p class="card-text text-white p-2 text-right" style="font-size: 12px;">'.date("M j, Y h:i A", strtotime($row['mesSent'])).'</p></div>';
+					if (strtotime($this->changetimefromUTC($row['mesSent']) > strtotime("-2 minutes"))) {
+					 	$output .='<div class="card rounded float-right z-depth-0 mb-1 last" style="max-width: 60%; background: #CBDAEF;"><div class="card-body p-2"><div class="dark-text style="font-size: 16px;">'.$row['chat'].'</div></div><p class="text-muted p-2 text-right" style="font-size: 12px;">'.$this->changetimefromUTC($row['mesSent']).'</p></div>';
 					} else {
-						$output .='<div class="card bg-primary rounded w-50 z-depth-0 mb-1 last"><div class="card-body p-2">';
-					if($row['parent_message'] != 0 ){
-						$chat = $this->messages_model->get_message($row['parent_message']);
-						$output .= '<p class="white-text font-italic ml-3" style="font-size: 16px;">" '.$chat['message'].' "</p><p class="text-white text-left ml-3" style="font-size: 12px;">You replied to '.ucwords($chat["first_name"]).' '.ucwords($chat["last_name"]).' '.date("M j, Y h:i A", strtotime($chat['timestamp'])).'</p><hr class="mt-1 mb-3">';
-					}
-					$output .=	'<p class="card-text text-white" style="font-size: 16px;">'.$row['chat'].'</p></div><p class="card-text text-white p-2 text-right" style="font-size: 12px;">'.date("M j, Y h:i A", strtotime($row['mesSent'])).'<a class="delete_chat" id="'.$row['chat_ID'].'"><span class="white-text p-2">&times;</span></a></p></div>';
+						$output .='<div class="card rounded z-depth-0 mb-1 last" style="max-width: 60%; background: #CBDAEF;"><div class="card-body p-2">';
+						if($row['parent_message'] != 0 ){
+							$chat = $this->messages_model->get_message($row['parent_message']);
+							$output .= '<div class="text-muted ml-3" style="font-size: 16px;">'.$chat['message'].'</div><p class="text-muted text-left ml-3" style="font-size: 12px;">You replied to '.ucwords($chat["first_name"]).' '.ucwords($chat["last_name"]).' '.$this->changetimefromUTC($chat['timestamp']).'</p><hr class="mt-1 mb-3">';
+						}
+						$output .=	'<p class="dark-text" style="font-size: 16px;">'.$row['chat'].'</p></div><p class="text-muted p-2 text-right" style="font-size: 12px;">'.$this->changetimefromUTC($row['mesSent']).'<a class="delete_chat" id="'.$row['chat_ID'].'"><span class="red-text p-2">&times;</span></a></p></div>';
 					}		
 				}
-				$output .= '<div class="profile-photo message-photo mt-2"><img src="'.base_url().'assets/img/users/'.$row['usImg'].'" alt="avatar" class="avatar ml-2 mr-0 chat-mes-id-2" style="height: 50px;width: 50px"><span class="state"></span></div></div>';
+				$output .= '</div>';
 				if(($row['mesStat'] == '1') && ($i == $total)){
-					$output .= '<p class="text-black font-italic float-right mr-5 pr-3" style="font-size: 12px;">Seen</p>';
+					$output .= '<p class="text-muted font-italic text-right pr-3" style="font-size: 12px;">Seen</p>';
 				}
 				$i++;
 			} else {
 				$other++;
 				$output .= '<div class="d-flex justify-content-start mb-1 align-items-center">';
-				$output .= '<div class="profile-photo message-photo"><img src="'.base_url().'assets/img/users/'.$row['usImg'].'" alt="avatar" class="avatar mr-2 ml-0 chat-mes-id-2" style="height: 50px;width: 50px"><span class="state"></span></div>';
+				$output .= '<div class="profile-photo message-photo"><img src="'.base_url().'assets/img/users/'.$row['usImg'].'" alt="avatar" class="rounded-circle avatar mr-2 ml-0 chat-mes-id-2" style="height: 50px;width: 50px"><span class="state"></span></div>';
 				if($row['mesStat'] == '2'){
-				$output .= ' <div class="card border border-light bg-white rounded-pill w-50 z-depth-0 mb-1 message-text"><div class="card-body"><p class="card-text text-black font-italic">This message has been removed.</p></div></div></div>';
+				$output .= ' <div class="card bg-white rounded-pill z-depth-0 mb-1 message-text w-50"><div class="card-body"><p class="card-text text-black font-italic">This message has been removed.</p></div></div></div>';
 				} else {
-				$output .= '<div class="card bg-light rounded w-50 z-depth-0 mb-1 message-text"><div class="card-body p-2">';
+				$output .= '<div class="card border border-light bg-white rounded z-depth-0 mb-1 message-text" style="max-width: 60%"><div class="card-body p-2">';
 				if($row['parent_message'] != 0 ){
 					$chat = $this->messages_model->get_message($row['parent_message']);
-					$output .= '<p class="black-text font-italic ml-3" style="font-size: 16px;">" '.$chat['message'].' "</p><p class="text-left ml-3 text-muted" style="font-size: 12px;">'.ucwords($row["first_name"]).' '.ucwords($row["last_name"]).' replied to You '.date("M j, Y h:i A", strtotime($chat['timestamp'])).'</p><hr class="mt-1 mb-3">';
+					$output .= '<div class="text-muted ml-3" style="font-size: 16px;">'.$chat['message'].'</div><p class="text-left ml-3 text-muted" style="font-size: 12px;">'.ucwords($row["first_name"]).' '.ucwords($row["last_name"]).' replied to You '.$this->changetimefromUTC($chat['timestamp']).'</p><hr class="mt-1 mb-3">';
 				}
-				$output .= '<p class=black-text chat_texts_'.$row['chat_ID'].'" style="font-size: 16px;">
-				'.$row['chat'].'</p></div><p class="card-text text-muted p-1 ml-2 text-left" style="font-size: 12px;">'.date("M j, Y h:i A", strtotime($row['mesSent'])).'</p></div><a class="replay ml-2" data-message-id="'.$row['chat_ID'].'"><i class="fas fa-reply"></i></a></div>';
+				$output .= '<div class="black-text chat_texts_'.$row['chat_ID'].'" style="font-size: 16px;">
+				'.$row['chat'].'</div></div><p class="card-text text-muted p-1 ml-2 text-left" style="font-size: 12px;">'.$this->changetimefromUTC($row['mesSent']).'</p></div><a class="replay ml-2" data-message-id="'.$row['chat_ID'].'"><i class="fas fa-reply"></i></a></div>';
 				}
 			}
 		}
@@ -135,40 +174,37 @@ class Messages extends CI_Controller {
 		foreach(array_reverse($group_data) as $row){
 			$total = $max - $other;
 			if($row["sender_ID"] == $this->session->userdata('user_id')){
-				$output .= '<div class="d-flex justify-content-end">';
-				if(($row["mesStat"] == '1') && ($i == $total)){
-					$output .= '<div class="card bg-white rounded-pill text-left z-depth-0 mb-1 last"><div class="card-body p-2"><p class="card-text text-black font-italic">Seen</p></div></div>';
-				}
-				if($row["mesStat"] == '2'){
-					$output .= '<div class="card border border-light bg-white rounded-pill w-50 float-right z-depth-0 mb-1 last"><div class="card-body"><p class="card-text text-black font-italic">This message has been removed.</p></div></div>';
+
+				$output .= '<div class="d-flex justify-content-end align-items-center">';
+				if($row['mesStat'] == '2'){
+					$output .= '<div class="card bg-white rounded-pill w-50 text-right z-depth-0 mb-1 last"><div class="card-body"><p class="card-text dark-text font-italic">You removed this message.</p></div></div>';
 				} else {
-					$now = strtotime("-2 minutes");
-					if ($now > strtotime($row["mesSent"])) {
-					 	$output .='<div class="card bg-primary rounded w-50 float-right z-depth-0 mb-1 last"><div class="card-body p-2"><p class="card-text text-white" style="font-size: 16px;">'.$row["chat"].'</p></div><p class="card-text text-white p-2 text-right" style="font-size: 12px;">'.date("M j, Y h:i A", strtotime($row["mesSent"])).'</p></div>';
+					if (strtotime($this->changetimefromUTC($row['mesSent']) > strtotime("-2 minutes"))) {
+					 	$output .='<div class="card rounded float-right z-depth-0 mb-1 last" style="max-width: 60%; background: #CBDAEF;"><div class="card-body p-2"><div class="dark-text style="font-size: 16px;">'.$row['chat'].'</div></div><p class="text-muted p-2 text-right" style="font-size: 12px;">'.$this->changetimefromUTC($row['mesSent']).'</p></div>';
 					} else {
-						$output .='<div class="card bg-primary rounded w-50 z-depth-0 mb-1 last"><div class="card-body p-2">';
+						$output .='<div class="card rounded z-depth-0 mb-1 last" style="max-width: 60%; background: #CBDAEF;"><div class="card-body p-2">';
 						if($row['parent_message'] != 0 ){
-							$chat = $this->messages_model->get_group_message($row['parent_message']);
-							$output .= '<p class="text-white font-italic ml-3" style="font-size: 16px;">" '.$chat['message'].' "</p><p class="text-left ml-3 text-white" style="font-size: 12px;">You replied to '.ucwords($chat["first_name"]).' '.ucwords($chat["last_name"]).' '.date("M j, Y h:i A", strtotime($chat['timestamp'])).'</p><hr class="mt-1 mb-3">';
+							$chat = $this->messages_model->get_message($row['parent_message']);
+							$output .= '<div class="text-muted ml-3" style="font-size: 16px;">'.$chat['message'].'</div><p class="text-muted text-left ml-3" style="font-size: 12px;">You replied to '.ucwords($chat["first_name"]).' '.ucwords($chat["last_name"]).' '.$this->changetimefromUTC($chat['timestamp']).'</p><hr class="mt-1 mb-3">';
 						}
-				$output .= '<p class="card-text text-white" style="font-size: 16px;">'.$row["chat"].'</p></div><p class="card-text text-white p-2 text-right" style="font-size: 12px;">'.date("M j, Y h:i A", strtotime($row["mesSent"])).'<a class="delete_group_chat" id="'.$row["chat_ID"].'"><span class="white-text p-2">&times;</span></a></p></div>';
+						$output .=	'<p class="dark-text" style="font-size: 16px;">'.$row['chat'].'</p></div><p class="text-muted p-2 text-right" style="font-size: 12px;">'.$this->changetimefromUTC($row['mesSent']).'<a class="delete_chat" id="'.$row['chat_ID'].'"><span class="red-text p-2">&times;</span></a></p></div>';
 					}		
 				}
-				$output .= '<div class="profile-photo message-photo mt-2"><img src="'.base_url().'assets/img/users/'.$row["usImg"].'" alt="avatar" class="avatar ml-2 mr-0 chat-mes-id-2" style="height: 50px;width: 50px"><span class="state"></span></div></div>';
+				$output .= '</div>';
 				$i++;
 			} else {
 				$other++;
 				$output .= '<div class="d-flex justify-content-start mb-1 align-items-center">';
-				$output .= '<div class="profile-photo message-photo mt-2"><img src="'.base_url().'assets/img/users/'.$row["usImg"].'" alt="avatar" class="avatar mr-2 ml-0 chat-mes-id-2" style="height: 50px;width: 50px"><span class="state"></span></div>';
+				$output .= '<div class="profile-photo message-photo mt-2"><img src="'.base_url().'assets/img/users/'.$row["usImg"].'" alt="avatar" class="rounded-circle avatar mr-2 ml-0 chat-mes-id-2" style="height: 50px;width: 50px"><span class="state"></span></div>';
 				if($row["mesStat"] == '2'){
-				$output .= '<div class="card border border-light bg-white rounded-pill w-50 z-depth-0 mb-1 message-text"><div class="card-body"><p class="card-text text-black font-italic">This message has been removed.</p></div></div></div>';
+				$output .= '<div class="card bg-white rounded-pill w-50 z-depth-0 mb-1 message-text"><div class="card-body"><p class="card-text text-black font-italic">This message has been removed.</p></div></div></div>';
 				} else {
-				$output .= '<div class="card bg-light rounded w-50 z-depth-0 mb-1 message-text"><div class="card-body p-2">';
+				$output .= '<div class="card border rounded z-depth-0 mb-1 message-text" style="max-width: 60%"><div class="card-body p-2">';
 				if($row['parent_message'] != 0 ){
 					$chat = $this->messages_model->get_group_message($row['parent_message']);
-					$output .= '<p class="black-text font-italic ml-3" style="font-size: 16px;">" '.$chat['message'].' "</p><p class="text-left ml-3 text-muted" style="font-size: 12px;">'.ucwords($row["first_name"]).' '.ucwords($row["last_name"]).' replied to '.ucwords($chat["first_name"]).' '.ucwords($chat["last_name"]).'</p><hr class="mt-1 mb-3">';
+					$output .= '<div class="text-muted ml-3" style="font-size: 16px;">'.$chat['message'].'</div><p class="text-left ml-3 text-muted" style="font-size: 12px;">'.ucwords($row["first_name"]).' '.ucwords($row["last_name"]).' replied to '.ucwords($chat["first_name"]).' '.ucwords($chat["last_name"]).'</p><hr class="mt-1 mb-3">';
 				}
-				$output .= '<p class="card-text black-text" style="font-size: 12px;">'.ucwords($row["first_name"]).' '.ucwords($row["last_name"]).'</p><p class="card-text black-text chat_texts_'.$row['chat_ID'].'" style="font-size: 16px;">'.$row["chat"].'</p></div><p class="card-text black-text text-left mr-1 p-2" style="font-size: 12px;">'.date("M j, Y h:i A", strtotime($row["mesSent"])).'</p></div><a class="group_replay ml-2" data-message-id="'.$row['chat_ID'].'"><i class="fas fa-reply"></i></a></div>';
+				$output .= '<p class="card-text black-text" style="font-size: 12px;">'.ucwords($row["first_name"]).' '.ucwords($row["last_name"]).'</p><div class="card-text black-text chat_texts_'.$row['chat_ID'].'" style="font-size: 16px;">'.$row["chat"].'</div></div><p class="card-text text-muted text-left mr-1 p-2" style="font-size: 12px;">'.$this->changetimefromUTC($row["mesSent"]).'</p></div><a class="group_replay ml-2" data-message-id="'.$row['chat_ID'].'"><i class="fas fa-reply"></i></a></div>';
 				}
 			}
 		}
@@ -182,13 +218,35 @@ class Messages extends CI_Controller {
 	}
 
 	function send_message() {
-		$data = $this->messages_model->send_message($this->session->userdata('user_id'), $this->input->post('user_ID'),  nl2br(htmlentities($this->input->post('chat_message'), ENT_QUOTES, 'UTF-8')), $this->input->post('chat_ID'));
+		$message = $this->convert($this->input->post('chat_message'));
+		$data = $this->messages_model->send_message($this->session->userdata('user_id'), $this->input->post('user_ID'), $message, $this->input->post('chat_ID'));
 		echo json_encode($data);
 	}
 
 	function send_group_message() {
-		$data = $this->messages_model->send_group_message($this->session->userdata('user_id'), $this->input->post('group_ID'), nl2br(htmlentities($this->input->post('chat_message'), ENT_QUOTES, 'UTF-8')), $this->input->post('chat_ID'));
+		$tagged_users_id = $this->get_tagged_users($this->input->post('chat_message'), '<a href="./user-profile/', '">@');
+		$message = $this->convert($this->input->post('chat_message'));
+
+		$data = $this->messages_model->send_group_message($this->session->userdata('user_id'), $this->input->post('group_ID'), $message, $this->input->post('chat_ID'), $tagged_users_id);
 		echo json_encode($data);
+	}
+
+	function get_tagged_users($str, $startDelimiter, $endDelimiter){
+		$contents = array();
+		$startDelimiterLength = strlen($startDelimiter);
+		$endDelimiterLength = strlen($endDelimiter);
+		$startFrom = $contentStart = $contentEnd = 0;
+		while (false !== ($contentStart = strpos($str, $startDelimiter, $startFrom))) {
+		    $contentStart += $startDelimiterLength;
+		    $contentEnd = strpos($str, $endDelimiter, $contentStart);
+			    if (false === $contentEnd) {
+			      break;
+			    }
+		    $contents[] = substr($str, $contentStart, $contentEnd - $contentStart);
+		    $startFrom = $contentEnd + $endDelimiterLength;
+		}
+
+		return $contents;
 	}
 
 	function create_message() {
@@ -199,7 +257,8 @@ class Messages extends CI_Controller {
 				'message' => 'User does not exist.'
 			);
 		} else {
-			$data = $this->messages_model->message_sent($this->session->userdata('user_id'), $toID['id'], $this->input->post('chat_message'));
+			$message = $this->convert($this->input->post('chat_message'));
+			$data = $this->messages_model->send_message($this->session->userdata('user_id'), $toID['id'], $message, 0);
 		}
 		echo json_encode($data);
 	}
@@ -231,7 +290,7 @@ class Messages extends CI_Controller {
 			$output .= '<li class="list-group-item"><a href="'.base_url().'user-profile/'.$row['user_ID'].'">'.ucwords($row['usFN']).' '.ucwords($row['usLN']).'</a></li>';
 		}
 		$output .= '';
-		echo json_encode($output);;
+		echo json_encode($output);
 	}
 
 	function add_member() {

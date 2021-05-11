@@ -9,22 +9,11 @@ class Users extends CI_Controller {
 	}
 
 	function accept_reward(){
-		$this->form_validation->set_error_delimiters('<script type="text/javascript">$(function(){toastr.error("', '")});</script>');
-        $this->form_validation->set_rules('reward', 'reward', 'required',array('required' => 'Click the reward'));
-
-	    if ($this->form_validation->run() === FALSE) {
-			$this->session->set_flashdata('multi', validation_errors());
-	        redirect('');
-	    } else {
-	    	$sql = $this->user_model->daily_logins($this->session->userdata('user_id'));
-	    	$rewards = $sql['days'] * 15;
-
-			$data = $this->user_model->accept_reward($this->session->userdata('user_id'), $rewards);
-			if($data){
-				$this->session->set_flashdata('success', 'Gain '.$rewards.' exp');
-			}
-			redirect('');
-	    }
+		$this->user_model->accept_reward($this->session->userdata('user_id'), $this->input->post('days'));
+		$data = array(
+			'exp' => 60
+		);
+		echo json_encode($data);
 	}
 
 	function my_purchases(){
@@ -173,15 +162,16 @@ class Users extends CI_Controller {
 				  'new_image' => $target_path,
 				  'maintain_ratio' => TRUE,
 				  'width' => 600,
-				  'quality' => '70%',
+				  'quality' => '80%',
 				);
 				$this->load->library('image_lib', $config_manip);
 				$this->image_lib->resize();
 				$this->image_lib->clear();
 			}
 		} else {
-			$profile_photo = $this->input->post('image');
+			$profile_photo = 'stock.png';
 		}
+
 		$bio = '';
 		if(!empty($this->input->post('bio'))){
 			$bio = $this->input->post('bio');
@@ -273,7 +263,6 @@ class Users extends CI_Controller {
 
 	function get_current_progress(){
 		$create = $this->user_model->get_current_progress($this->session->userdata('user_id'));
-
 		echo json_encode($create);
 	}
 
@@ -322,28 +311,43 @@ class Users extends CI_Controller {
 	}
 
 	function get_module_progress() {
-		$user_progress = $this->user_model->users_videos_watched($this->input->post('slug'), NULL, $this->session->userdata('user_id'));
-		$data = $this->course_model->count_course($this->input->post('slug'), NULL, $this->session->userdata('user_id'));
-		$percentage = ($user_progress['total'] / $data['content']) * 100;
-		$data = array(
-			'percentage_width' => $percentage,
-			'percentage' => round($percentage),
-			'total' => $user_progress['total']
-		);
-		echo json_encode($data);
+		$total = array();
+		$user_purchase = $this->programs_model->user_purchase($this->input->post('program_slug'), $this->session->userdata('user_id'));
+		
+		foreach ($user_purchase as $row) {
+			$sql = $this->user_model->users_videos_watched($row['course_slug'], NULL, $this->session->userdata('user_id'));
+			$sql2 = $this->course_model->count_course($row['course_slug'], NULL, $this->session->userdata('user_id'));
+			$percentage = ($sql['total'] / $sql2['content']) * 100;
+
+			$total[] = [
+				'course_ID' => $row['course_ID'],
+				'percentage_width' => $percentage,
+				'percentage' => round($percentage),
+				'total' => $sql['total']
+			];
+			
+		}
+		echo json_encode($total);
 	}
 
 	function get_section_progress() {
-		$user_progress = $this->user_model->users_videos_watched($this->input->post('slug'), $this->input->post('section_slug'), $this->session->userdata('user_id'));
-		$data = $this->course_model->count_course($this->input->post('slug'), $this->input->post('section_slug'), $this->session->userdata('user_id'));
-		$percentage = ($user_progress['total'] / $data['content']) * 100;
-		$data = array(
-			'percentage_width' => $percentage,
-			'percentage' => round($percentage),
-			'total' => $user_progress['total']
-		);
+		$total = array();
+		$user_purchase = $this->programs_model->user_purchase_by_section($this->input->post('program_slug'), $this->session->userdata('user_id'));
+		foreach ($user_purchase as $row) {
+			$sql = $this->user_model->users_videos_watched($row['course_slug'], $row['section_slug'], $this->session->userdata('user_id'));
+			$sql2 = $this->course_model->count_course($row['course_slug'], $row['section_slug'], $this->session->userdata('user_id'));
+			if($sql['total'] != 0){
+				$percentage = ($sql['total'] / $sql2['content']) * 100;
+				$total[] = [
+					'section_ID' => $row['section_ID'],
+					'percentage_width' => $percentage,
+					'percentage' => round($percentage),
+					'total' => $sql['total']
+				];
 
-		echo json_encode($data);
+			}
+		}
+		echo json_encode($total);
 	}
 
 	function add_purchases() {
@@ -368,6 +372,60 @@ class Users extends CI_Controller {
 
 	function delete_notes() {
 		$data = $this->user_model->delete_notes($this->input->post('id'));
+		echo json_encode($data);
+	}
+
+	function follow(){
+		$data = $this->user_model->follow($this->input->post('user_ID'), $this->session->userdata('user_id'));
+		echo json_encode($data);
+	}
+
+	function unfollow(){
+		$data = $this->user_model->unfollow($this->input->post('user_ID'), $this->session->userdata('user_id'));
+		echo json_encode($data);
+	}
+
+	function get_following(){
+		$data = $this->user_model->get_following($this->input->post('user_ID'));
+		$output = '';
+		foreach($data as $row){
+			$output .= '<li class="list-group-item"><a href="'.base_url().'user-profile/'.$row['following'].'"><img class="rounded-circle mr-2 card-img-100 chat-mes-id" src="'.base_url().'assets/img/users/'.$row['image'].'" style="height: 30px; width: 30px" alt="Profile photo">'.ucwords($row['first_name']).' '.ucwords($row['last_name']).'</a></li>';
+		}
+		$output .= '';
+		echo json_encode($output);
+	}
+	
+	function get_followers(){
+		$data = $this->user_model->get_followers($this->input->post('user_ID'));
+				$output = '';
+		foreach($data as $row){
+			$output .= '<li class="list-group-item"><a href="'.base_url().'user-profile/'.$row['follower'].'"><img class="rounded-circle mr-2 card-img-100 chat-mes-id" src="'.base_url().'assets/img/users/'.$row['image'].'" style="height: 30px; width: 30px" alt="Profile photo"> '.ucwords($row['first_name']).' '.ucwords($row['last_name']).'</a></li>';
+		}
+		$output .= '';
+		echo json_encode($output);
+	}
+
+	function update_user_status(){
+		$data = $this->user_model->update_user_status($this->session->userdata('user_id'));
+		echo json_encode($data);
+	}
+
+	function get_users(){
+		$user = $this->user_model->get_users($this->input->post('user_ID'));
+		$count_posts = $this->user_model->count_posts($this->input->post('user_ID'));
+		$count_followers = $this->user_model->count_followers($this->input->post('user_ID'));
+		$count_following = $this->user_model->count_following($this->input->post('user_ID'));
+		$rank = $this->user_model->get_user_by_id($this->input->post('user_ID'));
+		
+		$data = array(
+			'full_name' => ucwords($user['first_name']).' '.ucwords($user['last_name']),
+			'image' => $user['image'],
+			'level' => $user['level'],
+			'count_posts' => $count_posts['total'],
+			'count_followers' => $count_followers['total'],
+			'count_following' => $count_following['total'],
+			'bio' => $user['bio'],
+		);
 		echo json_encode($data);
 	}
 }

@@ -15,6 +15,7 @@
           <div class="card-body">
             <table class="table table-bordered display table-responsive-md" cellspacing="0" width="100%">
               <thead>
+              <th>ID</th>
               <th>Full Name</th>
               <th>Description</th>
               <th>Rating</th>
@@ -24,6 +25,7 @@
               <tbody>
                 <?php foreach($reviews as $reviews){ ?> 
                 <tr>
+                  <td><?php echo $reviews['id'];?></td>
                   <td><?php echo ucwords($reviews['reviewers_name']);?></td>
                   <td><?php echo $reviews['description'];?></td>
                   <td><?php echo $reviews['rating'];?></td>

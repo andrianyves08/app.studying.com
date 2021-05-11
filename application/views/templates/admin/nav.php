@@ -26,7 +26,7 @@ if($admin_status == '1'){?>
               <a href="<?php echo base_url();?>admin" class="dropdown-item waves-effect waves-light <?php if($title == 'Home'){ echo 'active';}?> waves-effect">Dashboard<i class="fas fa-chart-pie ml-3"></i></a>
               <a href="<?php echo base_url();?>admin/support" class="dropdown-item waves-effect waves-light <?php if($title == 'Support'){ echo 'active';}?>">Messages<i class="fas fa-comment ml-3"></i></a>
               <a href="<?php echo base_url();?>admin/rated-products" class="dropdown-item waves-effect waves-light <?php if($title == 'Rated Products'){ echo 'active';}?>">Rated Products<i class="fas fa-list-alt ml-3"></i></a>
-              <a href="<?php echo base_url();?>admin/products" class="dropdown-item waves-effect waves-light <?php if($title == 'Products'){ echo 'active';}?>">Products<i class="fas fa-search-dollar ml-3"></i></a>
+              <!-- <a href="<?php echo base_url();?>admin/products" class="dropdown-item waves-effect waves-light <?php if($title == 'Products'){ echo 'active';}?>">Products<i class="fas fa-search-dollar ml-3"></i></a> -->
               <a href="<?php echo base_url();?>admin/users" class="dropdown-item waves-effect waves-light <?php if($title == 'Users'){ echo 'active';}?>">Users<i class="fas fa-user ml-3"></i></a>
               <a href="<?php echo base_url();?>admin/modules" class="dropdown-item waves-effect waves-light <?php if($title == 'Course'){ echo 'active';}?>">Modules<i class="fas fa-graduation-cap ml-3"></i></a>
               <a href="<?php echo base_url();?>admin/posts" class="dropdown-item waves-effect waves-light <?php if($title == 'Posts'){ echo 'active';}?>">Posts<i class="fas fa-newspaper ml-3"></i></a>
@@ -57,7 +57,7 @@ if($admin_status == '1'){?>
       <a href="<?php echo base_url();?>admin" class="list-group-item list-group-item-action <?php if($title == 'Home'){ echo 'active';}?> waves-effect"><i class="fas fa-chart-pie mr-2"></i>Dashboard</a>
       <a href="<?php echo base_url();?>admin/support" class="list-group-item list-group-item-action waves-effect <?php if($title == 'Support'){ echo 'active';}?>"><i class="fas fa-comment mr-2"></i>Messages <span id="new_messages"></span></a>
       <a href="<?php echo base_url();?>admin/rated-products" class="list-group-item list-group-item-action waves-effect <?php if($title == 'Rated Products'){ echo 'active';}?>"><i class="fas fa-search-dollar mr-2"></i>Rated Products</span></a>
-      <a href="<?php echo base_url();?>admin/products" class="list-group-item list-group-item-action waves-effect <?php if($title == 'Products'){ echo 'active';}?>"><i class="fas fa-list-alt mr-2"></i>Products</span></a>
+      <!-- <a href="<?php echo base_url();?>admin/products" class="list-group-item list-group-item-action waves-effect <?php if($title == 'Products'){ echo 'active';}?>"><i class="fas fa-list-alt mr-2"></i>Products</span></a> -->
       <a href="<?php echo base_url();?>admin/users" class="list-group-item list-group-item-action waves-effect <?php if($title == 'Users'){ echo 'active';}?>"><i class="fas fa-user mr-2"></i>Users</a>
       <a href="<?php echo base_url();?>admin/modules" class="list-group-item list-group-item-action waves-effect <?php if($title == 'Course'){ echo 'active';}?>"><i class="fas fa-graduation-cap mr-2"></i>Modules</a>
       <a href="<?php echo base_url();?>admin/posts" class="list-group-item list-group-item-action waves-effect <?php if($title == 'Posts'){ echo 'active';}?>"><i class="fas fa-newspaper mr-2"></i>Posts</a>
@@ -147,7 +147,7 @@ if($admin_status == '1'){?>
               <a href="<?php echo base_url();?>admin/support" class="dropdown-item waves-effect waves-light <?php if($title == 'Support'){ echo 'active';}?>">Messages<i class="fas fa-comment ml-3"></i></a>
               <a href="<?php echo base_url();?>admin/rated-products" class="dropdown-item waves-effect waves-light <?php if($title == 'Rated Products'){ echo 'active';}?>">Rated Products<i class="fas fa-search-dollar ml-3"></i></a>
               <a href="<?php echo base_url();?>admin/users" class="dropdown-item waves-effect waves-light <?php if($title == 'Users'){ echo 'active';}?>">Users<i class="fas fa-user ml-3"></i></a>
-              <a href="<?php echo base_url();?>admin/products" class="dropdown-item waves-effect waves-light <?php if($title == 'Products'){ echo 'active';}?>">Products<i class="fas fa-search-dollar ml-3"></i></a>
+              <!-- <a href="<?php echo base_url();?>admin/products" class="dropdown-item waves-effect waves-light <?php if($title == 'Products'){ echo 'active';}?>">Products<i class="fas fa-search-dollar ml-3"></i></a> -->
               <a href="<?php echo base_url();?>admin/ratings" class="dropdown-item waves-effect waves-light <?php if($title == 'Ratings'){ echo 'active';}?>">Ratings<i class="fas fa-star ml-3 amber-text"></i></a>
               <a href="<?php echo base_url();?>admin/programs" class="dropdown-item waves-effect waves-light <?php if($title == 'Programs'){ echo 'active';}?>">Programs<i class="fas fa-hourglass ml-3"></i></a>
               <a href="<?php echo base_url();?>admin/modules" class="dropdown-item waves-effect waves-light <?php if($title == 'Course'){ echo 'active';}?>">Modules<i class="fas fa-graduation-cap ml-3"></i></a>
@@ -179,7 +179,7 @@ if($admin_status == '1'){?>
       <a href="<?php echo base_url();?>admin" class="list-group-item list-group-item-action <?php if($title == 'Home'){ echo 'active';}?> waves-effect"><i class="fas fa-chart-pie mr-2"></i>Dashboard</a>
       <a href="<?php echo base_url();?>admin/support" class="list-group-item list-group-item-action waves-effect <?php if($title == 'Support'){ echo 'active';}?>"><i class="fas fa-comment mr-2"></i>Messages <span id="new_messages"></span></a>
       <a href="<?php echo base_url();?>admin/rated-products" class="list-group-item list-group-item-action waves-effect <?php if($title == 'Rated Products'){ echo 'active';}?>"><i class="fas fa-search-dollar mr-2"></i>Rated Products</span></a>
-      <a href="<?php echo base_url();?>admin/products" class="list-group-item list-group-item-action waves-effect <?php if($title == 'Products'){ echo 'active';}?>"><i class="fas fa-list-alt mr-2"></i>Products</span></a>
+      <!-- <a href="<?php echo base_url();?>admin/products" class="list-group-item list-group-item-action waves-effect <?php if($title == 'Products'){ echo 'active';}?>"><i class="fas fa-list-alt mr-2"></i>Products</span></a> -->
       <a href="<?php echo base_url();?>admin/users" class="list-group-item list-group-item-action waves-effect <?php if($title == 'Users'){ echo 'active';}?>"><i class="fas fa-user mr-3"></i>Users</a>
       <a href="<?php echo base_url();?>admin/ratings" class="list-group-item list-group-item-action waves-effect <?php if($title == 'Ratings'){ echo 'active';}?>"><i class="fas fa-star mr-2 amber-text"></i>Ratings</a>
       <a href="<?php echo base_url();?>admin/programs" class="list-group-item list-group-item-action waves-effect <?php if($title == 'Programs'){ echo 'active';}?>"><i class="fas fa-hourglass mr-3"></i>Programs</a>

@@ -85,17 +85,9 @@
           <label for="formGroupExampleInput">* Rating</label>
           <input type="number" class="form-control" name="rating" min="0" max="10" required>
         </div>
-        <label for="formGroupExampleInput">* Category</label>
-        <div class="input-group mb-4">
-          <select class="browser-default custom-select" id="select_category" name="category[]" required>
-          </select>
-          <div class="input-group-append">
-            <a class="btn btn-md btn-outline-primary m-0 px-3 py-2 z-depth-0 waves-effect" type="button" data-toggle="modal" data-target="#create_category">Create New Category</a>
-          </div>
-        </div>
-        <label for="formGroupExampleInput">* Sub Category</label>
-        <div class="form-group mb-4">
-          <select class="browser-default custom-select select2" name="category[]" id="select_sub_category" multiple="multiple" data-placeholder="Select sub category" required style="width: 100%"></select>
+        <div class="form-group">
+          <label for="formGroupExampleInput">* URL</label>
+          <input type="text" class="form-control" name="url" required>
         </div>
         <label for="image">* Upload Photos</label>
         <div class="input-group mb-4">
@@ -137,40 +129,6 @@
   </div>
 </div>
 <!-- View Image-->
-<!-- Create Category-->
-<div data-backdrop="static" class="modal fade" id="create_category" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-  aria-hidden="true">
-  <div class="modal-dialog modal-md modal-notify modal-success" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title w-100" id="myModalLabel">Create New Category</h4>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label for="formGroupExampleInput">* Name</label>
-          <input type="text" class="form-control" name="new_category" id="new_category">
-        </div>
-        <label for="formGroupExampleInput">* Type</label>
-        <div class="custom-control custom-radio">
-          <input type="radio" class="custom-control-input category_type" id="main_category" name="type" value="1">
-          <label class="custom-control-label" for="main_category">Main Category</label>
-        </div>
-        <div class="custom-control custom-radio">
-          <input type="radio" class="custom-control-input category_type" id="sub_category" name="type" value="2">
-          <label class="custom-control-label" for="sub_category">Sub Category</label>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
-        <button class="btn btn-primary waves-effect btn-sm float-right" type="submit" id="add_category">Create</button>
-      </div>
-    </div>
-  </div>
-</div>
-<!-- Create Category-->
 <!-- Product Delete -->
 <div data-backdrop="static" class="modal fade" id="product_delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
   aria-hidden="true">
@@ -196,30 +154,6 @@
 <!-- Product Delete -->
 <script>
 $(document).ready(function(){
-  get_category();
-  function get_category(){
-    $.ajax({
-      type  : 'POST',
-      url   : "<?=base_url()?>rated_products/get_category",
-      async : true,
-      dataType : 'json',
-      success : function(data){
-        var html = '';
-        var html2 = '';
-        var i;
-        for(i=0; i<data.length; i++){
-          if(data[i].type == 1){
-            html += '<option value='+data[i].id+'>'+data[i].name+'</option>';
-          } else {
-            html2 += '<option value='+data[i].id+'>'+data[i].name+'</option>';
-          }
-        }
-        $('#select_category').html(html);
-        $('#select_sub_category').html(html2);
-      }
-    });
-  }
-
   $(document).on("click", ".delete_product", function() { 
     var id=$(this).data('product-id');
     $('#product_delete').modal('show');
@@ -259,29 +193,6 @@ $(document).ready(function(){
         $('#image_list').html(html);
       }
     });
-  });
-
-  //Add member
-  $('#add_category').on('click',function(){
-    var name = $('#new_category').val();
-    var type = $(".category_type:checked").val();
-    $.ajax({
-      type : "POST",
-      url  : "<?=base_url()?>rated_products/create_category",
-      dataType : "JSON",
-      data : {name:name, type:type},
-      success: function(data){
-        if(data.error){
-          toastr.error(data.message);
-        } else {
-          toastr.success('Category created');
-          $('#create_category').modal('hide');
-        }
-        $('#new_category').val('');
-        get_category();
-      }
-    });
-    return false;
   });
 });
 </script>

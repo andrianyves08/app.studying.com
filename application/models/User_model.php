@@ -5,58 +5,7 @@
         $this->load->database();
         //$this->db2 = $this->load->database('opencart', TRUE);
     }
-
-
-    function all_videos(){
-    	$this->db->where('duration is NOT NULL', NULL, FALSE);
-		$this->db->group_by('src');
-		$query = $this->db->get('videos');
-		return $query->result_array();
-	}
-
-    function accept_reward($user_ID, $reward){
-		$this->db->trans_begin();
-		$this->db->set('timestamp', 'NOW()', FALSE);
-		$this->db->set('days', 'days+1', FALSE);
-		$this->db->where('user_ID', $user_ID);
-		$this->db->update('users_daily_login');
-
-		$this->db->set('exp', 'exp+'.$reward.'', FALSE);
-		$this->db->where('id', $user_ID);
-		$this->db->update('users');
-
-		if ($this->db->trans_status() === FALSE){
-		    $this->db->trans_rollback();
-		    return false;
-		} else{
-		    $this->db->trans_commit();
-		    return true;
-		}
-	}
-
-    function daily_logins($user_ID){
-		$this->db->where('user_ID', $user_ID);
-		$query = $this->db->get('users_daily_login');
-		return $query->row_array();
-	}
-
-	function start_daily_login_reward($user_ID){
-		$data = array(
-			'user_ID' => $user_ID,
-	        'days' => '1'
-		);
-		$this->db->set('timestamp', 'NOW() - INTERVAL 1 DAY', FALSE);
-        $this->db->set('date_started', 'NOW()', FALSE);
-		$this->db->insert('users_daily_login', $data);
-	}
-
-    function get_music_status($user_ID){
-    	$this->db->select('music_status');
-		$this->db->where('id', $user_ID);
-		$query = $this->db->get('users');
-		return $query->row_array();
-	}
-
+   
     function verify($email, $verification_code){
 		$this->db->where('email', strtolower($email));
 		$this->db->order_by('timestamp', 'DESC');
@@ -65,7 +14,7 @@
 
 		$result = $query->row_array();
 		if(!empty($result) && password_verify($verification_code, $result['verification_code'])){
-			$hashed_password = password_hash('learnecom', PASSWORD_DEFAULT);
+			$hashed_password = password_hash('studying', PASSWORD_DEFAULT);
 			$this->db->set('password', $hashed_password);
 			$this->db->where('email', strtolower($email));
 			$this->db->update('users');
@@ -82,10 +31,8 @@
 			'email' => strtolower($email),
 			'verification_code' => $hashed_verifcation
 		);
-
 		$this->db->insert('users_verify_email', $data);
 	}
-
 
     function music_status($email, $status){
     	$this->db->set('music_status', $status);
@@ -212,10 +159,8 @@
 				);
 				$this->db->set('created_at', 'NOW()', FALSE);
 				$this->db->insert('users_programs', $data1);
-
 	      	}
 	    }
-
 		if ($this->db->trans_status() === FALSE){
 		    $this->db->trans_rollback();
 		    return false;
@@ -437,7 +382,6 @@
 				);
 				$this->db->set('created_at', 'NOW()', FALSE);
 				$this->db->insert('users_programs', $data1);
-
 	      	}
 	    }
 
@@ -449,7 +393,6 @@
 		    return true;
 		}
 	}
-
 
 	function delete_purchase($id){
 		$this->db->delete('users_programs', array('id' => $id));		
@@ -502,9 +445,8 @@
 	}
 
 	 public function get_last_progress(){
-	 	$user_ID = $this->session->userdata('user_id');
     	$this->db->select('*');
-    	$this->db->where('user_ID', $user_ID);
+    	$this->db->where('user_ID', $this->session->userdata('user_id'));
     	$this->db->order_by('timestamp', 'DESC');
 		$this->db->limit(1);
 
@@ -554,5 +496,181 @@
 
     function delete_notes($id){
 		$this->db->delete('users_notes', array('id' => $id));		
+	}
+
+    function all_videos(){
+    	$this->db->where('duration is NOT NULL', NULL, FALSE);
+		$this->db->group_by('src');
+		$query = $this->db->get('videos');
+		return $query->result_array();
+	}
+
+    function accept_reward($user_ID, $days){
+		$this->db->trans_begin();
+		$days = $days + 1;
+		$this->db->set('timestamp', 'NOW()', FALSE);
+		$this->db->set('streak', 'streak+1', FALSE);
+		if($days == 30){
+			$this->db->set('status', 1);
+		}
+		$this->db->set('days', 'days+1', FALSE);
+		$this->db->where('user_ID', $user_ID);
+		$this->db->update('users_daily_login');
+
+		$this->db->set('exp', 'exp+60', FALSE);
+		$this->db->where('id', $user_ID);
+		$this->db->update('users');
+
+		if ($this->db->trans_status() === FALSE){
+		    $this->db->trans_rollback();
+		    return false;
+		} else{
+		    $this->db->trans_commit();
+		    return true;
+		}
+	}
+
+    function daily_logins($user_ID = FALSE){
+    	if($user_ID === FALSE){
+    		$this->db->select('users_daily_login.*, users.first_name, users.last_name');
+			$this->db->join('users', 'users.id = users_daily_login.user_ID');
+			$query = $this->db->get('users_daily_login');
+			return $query->result_array();
+		}
+		$this->db->where('user_ID', $user_ID);
+		$query = $this->db->get('users_daily_login');
+		return $query->row_array();
+	}
+
+	function start_daily_login_reward($user_ID){
+		$timestamp = strtotime('today 9pm');
+		$time = date("Y-m-d H:i:s", $timestamp);
+
+		$data = array(
+			'user_ID' => $user_ID,
+	        'days' => '1'
+		);
+		$this->db->set('timestamp', 'NOW() - INTERVAL 1 DAY', FALSE);
+        $this->db->set('date_started', $time);
+		$this->db->insert('users_daily_login', $data);
+	}
+
+    function get_music_status($user_ID){
+    	$this->db->select('music_status');
+		$this->db->where('id', $user_ID);
+		$query = $this->db->get('users');
+		return $query->row_array();
+	}
+
+	function follow($following, $follower){
+		$this->db->trans_begin();
+    	$data = array(
+    		'following' => $following,
+			'follower' => $follower
+		);
+
+		$this->db->insert('users_follow', $data);
+
+		$user_follower = $this->db->insert_id();
+        $data2 = array(
+        	'type' => 4,
+        	'notification_option_id' => 9,
+        	'id' => $user_follower,
+			'notified' => $following,
+			'notifier' => $follower,
+		);
+    	
+		$this->db->insert('users_notifications', $data2);
+
+		if ($this->db->trans_status() === FALSE){
+		    $this->db->trans_rollback();
+		    return false;
+		} else{
+		    $this->db->trans_commit();
+		    return true;
+		}
+	}
+
+	function unfollow($following, $follower){
+		$this->db->delete('users_follow', array('following' => $following, 'follower' => $follower));
+		$this->db->delete('users_notifications',  array(
+        	'type' => 4,
+        	'notification_option_id' => 9,
+			'notified' => $following,
+			'notifier' => $follower,
+		));
+	}
+
+	function is_following($following, $follower){
+		$this->db->select('count(*) as total');
+		$query = $this->db->get_where('users_follow', array('following' => $following, 'follower' => $follower));
+
+		return $query->row_array();
+	}
+
+	function count_posts($user_ID){
+		$this->db->select('count(*) as total');
+		$query = $this->db->get_where('users_posts', array('user_ID' => $user_ID));
+
+		return $query->row_array();
+	}
+
+	function count_followers($user_ID){
+		$this->db->select('count(*) as total');
+		$query = $this->db->get_where('users_follow', array('following' => $user_ID));
+
+		return $query->row_array();
+	}
+
+	function count_following($user_ID){
+		$this->db->select('count(*) as total');
+		$query = $this->db->get_where('users_follow', array('follower' => $user_ID));
+
+		return $query->row_array();
+	}
+
+	function get_followers($user_ID){
+		$this->db->select('*');
+		$this->db->join('users', 'users.id = users_follow.follower');
+		$query = $this->db->get_where('users_follow', array('following' => $user_ID));
+
+		return $query->result_array();
+	}
+
+	function get_following($user_ID){
+		$this->db->select('users_follow.*, users.first_name, users.last_name, users.image');
+		$this->db->join('users', 'users.id = users_follow.following');
+		$query = $this->db->get_where('users_follow', array('follower' => $user_ID));
+
+		return $query->result_array();
+	}
+
+	function insert_timezone($timezone, $user_ID){
+		$this->db->trans_begin();
+
+		$this->db->set('timezone', $timezone);
+		$this->db->where('id', $user_ID);
+		$this->db->update('users');
+
+		if ($this->db->trans_status() === FALSE){
+		    $this->db->trans_rollback();
+		    return false;
+		} else{
+		    $this->db->trans_commit();
+		    return true;
+		}
+	}
+
+	function update_user_status($user_ID){
+    	$this->db->set('last_login', 'NOW()', FALSE);
+		$this->db->where('id', $user_ID);
+		return $this->db->update('users');
+	}
+
+	function reset_login_streak($user_ID){
+		$this->db->set('timestamp', 'NOW() - INTERVAL 1 DAY', FALSE);
+        $this->db->set('days', 0);
+		$this->db->where('user_ID', $user_ID);
+		return $this->db->update('users_daily_login');
 	}
 }

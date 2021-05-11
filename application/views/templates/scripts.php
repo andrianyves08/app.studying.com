@@ -28,6 +28,7 @@
     </div>
   </div>
 </div>
+
 <!-- Bootstrap tooltips -->
 <script type="text/javascript" src="<?php echo base_url();?>assets/js/popper.min.js"></script>
 <!-- Bootstrap core JavaScript -->
@@ -91,7 +92,7 @@ $(function () {
 })
 </script>
 <script type="text/javascript">
-$(document).ready(function(){
+function get_level(){
   $.ajax({
     type  : 'POST',
     url   : "<?=base_url()?>users/get_level",
@@ -100,29 +101,17 @@ $(document).ready(function(){
       $('#my_level').html(data);
     }
   });
-  $.ajax({
-    type  : 'POST',
-    url   : "<?=base_url()?>users/get_user_programs",
-    dataType : 'json',
-    success : function(data){
-      var html = "";
-      var i;
-       for(i=0; i<data.length; i++){
-        html += '<a class="dropdown-item" href="<?php echo base_url();?>modules/'+data[i].slug+'">'+data[i].name+'</a>';
-      }
-      $('#my_purchases').html(html);
-    }
-  });
-});
+}
 </script>
 <script src="<?php echo base_url(); ?>assets/js/addons/rating.js"></script>
 <script type="text/javascript">
 $(document).ready(function() {
+  get_level();
   $('#rateMe1').mdbRate();
   $('#rateMe1').hover(function() {
-  var count = $('#rateMe1 .amber-text').length;
-  $('[name="feedback_rating"]').val(count);
-});
+    var count = $('#rateMe1 .amber-text').length;
+    $('[name="feedback_rating"]').val(count);
+  });
   $('#user_logout').on('click',function(){
     $.ajax({
       type : "POST",
@@ -166,10 +155,7 @@ lazyframe('.lazyframe', {
 });
 </script>
 <script src="<?php echo base_url();?>assets/plugins/slick/slick.min.js" type="text/javascript" charset="utf-8"></script>
-<script src="<?php echo base_url('/assets/plugins/summernote/summernote-bs4.min.js'); ?>"></script>
-<!--include tam-emoji js-->
-<script src="<?php echo base_url();?>assets/plugins/summernote/plugin/tam-emoji/js/config.js"></script>
-<script src="<?php echo base_url();?>assets/plugins/summernote/plugin/tam-emoji/js/tam-emoji.min.js?v=1.1"></script>
+
 <script type="text/javascript">
 const preloader = document.querySelector('.preloader');
 const fadeEffect = setInterval(() => {
@@ -184,31 +170,32 @@ const fadeEffect = setInterval(() => {
   }
    preloader.classList.add("loaded");
 }, 5);
-window.addEventListener('load', fadeEffect);
 </script>
 <script type="text/javascript">
 $(document).ready(function() {
   var my_ID = <?php echo $my_id;?>;
-  var status = 0;
   $.ajax({
     type : "POST",
     url  : "<?=base_url()?>posts/get_notifications",
     dataType : "JSON",
-    data:{status:status},
     success: function(data){
       var html= '';
       var i;
+      var count = 0;
       for(i=0; i<data.length; i++){
-        if(my_ID == data[i].owner){
-          html += '<a class="dropdown-item" href="<?php echo base_url();?>my-profile#'+data[i].post_ID+'">'+data[i].type+'<h6 class="m-4">'+data[i].posts+'</h6></a>';
+        if(data[i].type == 1){
+          html += '<div data-url="./user-profile/'+data[i].notifier+'#'+data[i].post_ID+'" class="notifier dropdown-item"><img class="rounded-circle mr-2 card-img-100 chat-mes-id" src="<?php echo base_url();?>assets/img/users/'+data[i].image+'" style="height: 25px; width: 25px" alt="Profile photo">'+data[i].notification_option_id+'<br><div style="width: 300px;">'+data[i].posts+'</div><span style="font-size: 12px;">'+data[i].timestamp+'</span></div>';
         } else {
-          html += '<a class="dropdown-item" href="<?php echo base_url();?>user-profile/'+data[i].owner+'#'+data[i].post_ID+'">'+data[i].type+'<h6>'+data[i].posts+'</h6></a>';
+          html += '<div data-url="./messages" class="notifier dropdown-item"><img class="rounded-circle mr-2 card-img-100 chat-mes-id" src="<?php echo base_url();?>assets/img/users/'+data[i].image+'" style="height: 25px; width: 25px" alt="Profile photo">'+data[i].notification_option_id+'<br><div style="width: 300px;">'+data[i].posts+'</div><span style="font-size: 12px;">'+data[i].timestamp+'</span></div>';
+        }
+        
+        if(data[i].status == 0){
+          count++;
         }
       }
       $('#notifications').html(html);
-
-      if(data.length > 0){
-        var html2 = '<span class="badge badge-danger badge-pill">'+data.length+'</span>';
+      if(count != 0){
+        var html2 = '<span class="badge badge-danger badge-pill">'+count+'</span>';
         $('#notification_bell').html(html2);
       }
     }
@@ -225,6 +212,25 @@ $(document).ready(function() {
     })
   });
 
+  $(document).on('click', '.notifier', function(){
+    var href = $(this).data('url');
+    window.location.href = href;
+  });
+
+  setInterval(function(){
+    update_user_status();
+  }, 60000);
+
+  function update_user_status(){
+    $.ajax({
+      type  : 'post',
+      url   : "<?=base_url()?>users/update_user_status",
+      async : true,
+      dataType : 'json',
+      success : function(data){
+      }
+    });
+  }
 });
 </script>
 <!-- Developed By: Andrian Yves Macalino, andrianyvesmacalino@gmail.com -->

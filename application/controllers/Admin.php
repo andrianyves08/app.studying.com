@@ -29,7 +29,6 @@ class Admin extends CI_Controller {
 		$this->load->view('admin/index', $data);
 		$this->load->view('templates/admin/footer');
         $this->load->view('templates/admin/scripts');
-        $this->load->view('templates/admin/page_scripts/'.$page);
 	}
 
 	public function users()	{
@@ -44,12 +43,13 @@ class Admin extends CI_Controller {
 		$data['clients'] = $this->user_model->get_users();
 		$data['programs'] = $this->programs_model->get_programs();
 
+		$data['daily_logins'] = $this->user_model->daily_logins();
+
 		$this->load->view('templates/admin/header', $data);
         $this->load->view('templates/admin/nav', $data);
 		$this->load->view('admin/'.$page, $data);
         $this->load->view('templates/admin/footer');
         $this->load->view('templates/admin/scripts');
-        $this->load->view('templates/admin/page_scripts/default');
 	}
 
 	public function posts()	{
@@ -69,7 +69,6 @@ class Admin extends CI_Controller {
 		$this->load->view('admin/'.$page, $data);
         $this->load->view('templates/admin/footer');
         $this->load->view('templates/admin/scripts');
-        $this->load->view('templates/admin/page_scripts/default');
 	}
 
 	public function profile($id){
@@ -91,7 +90,6 @@ class Admin extends CI_Controller {
 		$this->load->view('admin/users-profile', $data);
         $this->load->view('templates/admin/footer');
         $this->load->view('templates/admin/scripts');
-        $this->load->view('templates/admin/page_scripts/profile');
 	}
 
 	public function admins() {
@@ -116,7 +114,6 @@ class Admin extends CI_Controller {
 		$this->load->view('admin/'.$page, $data);
 		$this->load->view('templates/admin/footer');
         $this->load->view('templates/admin/scripts');
-        $this->load->view('templates/admin/page_scripts/default');
 	}
 
 	public function ratings()	{
@@ -139,7 +136,6 @@ class Admin extends CI_Controller {
 		$this->load->view('admin/'.$page, $data);
 		$this->load->view('templates/admin/footer');
         $this->load->view('templates/admin/scripts');
-        $this->load->view('templates/admin/page_scripts/default');
 	}
 
 	public function support()	{
@@ -163,7 +159,6 @@ class Admin extends CI_Controller {
 		$this->load->view('admin/'.$page, $data);
 		$this->load->view('templates/admin/footer');
         $this->load->view('templates/admin/scripts');
-        $this->load->view('templates/admin/page_scripts/default');
 	}
 
 	public function login(){
@@ -179,7 +174,6 @@ class Admin extends CI_Controller {
            	$this->load->view('templates/admin/header', $data);
 			$this->load->view('admin/'.$page, $data);
 			$this->load->view('templates/admin/scripts');
-        	$this->load->view('templates/admin/page_scripts/default');
         } else {
             $admin_id = $this->admin_model->login($this->input->post('email'), $this->input->post('password'));
 
@@ -210,6 +204,7 @@ class Admin extends CI_Controller {
 	public function logout(){
         $this->session->unset_userdata('admin_logged_in');
         $this->session->unset_userdata('admin_id');
+        $this->session->sess_destroy();
         $this->session->set_flashdata('success', 'You are now logged out');
 
         redirect('admin/login');

@@ -103,36 +103,19 @@
 		
 	}
 
-	public function create_keyword($name){
-		$this->db->trans_begin();
-
-		$data = array(
-			'name' => strtolower($name),
-		);
-
-		$this->db->insert('keywords', $data);
-
-		if ($this->db->trans_status() === FALSE){
-		    $this->db->trans_rollback();
-		    return false;
-		} else{
-		    $this->db->trans_commit();
-		    return true;
-		}
-	}
-
-	public function create_content($admin_ID, $title, $description, $type, $banner, $content, $select_category, $select_keyword, $uploads){
+	public function create_content($admin_ID, $title, $meta_description, $type, $banner, $content, $select_category, $meta_keywords, $uploads){
 		$this->db->trans_begin();
 
 		$slug = url_title($title);
 
 		$data = array(
-			'title' => strtolower($title),
-			'description' => strtolower($description),
+			'title' => $title,
 			'slug' => strtolower($slug),
 			'type' => $type,
 			'banner' => $banner,
 			'content' => $content,
+			'meta_description' => strtolower($meta_description),
+			'meta_keywords' => strtolower($meta_keywords),
 			'admin_ID' => $admin_ID
 		);
 
@@ -227,17 +210,18 @@
 		
 	}
 
-	public function update_content($id, $title, $description, $type, $banner, $content, $select_category, $select_keyword){
+	public function update($id, $title, $meta_description, $type, $banner, $content, $select_category, $meta_keywords){
 		$this->db->trans_begin();
 		$slug = url_title($title);
 
 		$data = array(
-			'title' => strtolower($title),
-			'description' => strtolower($description),
+			'title' => $title,
 			'slug' => strtolower($slug),
 			'type' => $type,
 			'banner' => $banner,
-			'content' => $content
+			'content' => $content,
+			'meta_description' => strtolower($meta_description),
+			'meta_keywords' => strtolower($meta_keywords),
 		);
 
 		$this->db->set('timestamp', 'NOW()', FALSE);
@@ -267,5 +251,14 @@
 		    $this->db->trans_commit();
 		    return true;
 		}
+	}
+
+	public function search_resources($search ){
+		$this->db->select('*, resources_type.name as type_name');
+    	$this->db->join('resources_type', 'resources_type.id = resources.type');
+		$this->db->like('title', $search);
+		$query = $this->db->get('resources');
+
+		return $query->result_array();
 	}
 }

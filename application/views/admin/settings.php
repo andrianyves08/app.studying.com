@@ -10,7 +10,6 @@
     </div>
   </div>
   <!-- Heading -->
-
   <div class="row">
     <div class="col-md-6">
       <div class="card">
@@ -18,19 +17,21 @@
           <h4>Options</h4>
           <table class="table table-responsive-md" cellspacing="0" width="100%">
             <tbody>
+              <?php if($admin_id == 13) { ?>
               <tr>
                 <td>System Status</td>
                 <td>
                   <?php 
-                  if($settings['system_status'] == 0){
-                    echo '<span class="badge badge-pill badge-danger">Under Maintenance</span>';
-                  } else {
-                    echo '<span class="badge badge-pill badge-success">Active</span>';
-                  }
+                    if($settings['system_status'] == 0){
+                      echo '<span class="badge badge-pill badge-danger">Under Maintenance</span>';
+                    } else {
+                      echo '<span class="badge badge-pill badge-success">Active</span>';
+                    }
                   ?>
                 </td>
                 <td><a class="text-primary" data-toggle="modal" data-target="#edit_system_status"><i class="fas fa-edit text-primary"></i> Edit</a></td>
               </tr>
+              <?php } ?>
               <tr>
                 <td>Logo</td>
                 <td><?php echo $settings['logo_img'];?></td>
@@ -70,7 +71,6 @@
         </div><!--Card Body-->
       </div><!--Card-->
     </div><!--Colmun-->
-
     <div class="col-md-6">
       <div class="card">
         <div class="card-body">
@@ -120,7 +120,6 @@
     </div>
   </div>
 </div>
-
 <!-- Login Video -->
 <div class="modal fade" id="edit_login_video" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
   aria-hidden="true">
@@ -150,7 +149,6 @@
     </div>
   </div>
 </div>
-
 <!-- Home Video -->
 <div class="modal fade" id="edit_home_video" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
   aria-hidden="true">
@@ -180,7 +178,6 @@
     </div>
   </div>
 </div>
-
 <!-- Music -->
 <div class="modal fade" id="edit_music" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
   aria-hidden="true">
@@ -210,7 +207,6 @@
     </div>
   </div>
 </div>
-
 <!-- Change Password -->
 <div class="modal fade" id="changepassword" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
   aria-hidden="true">
@@ -245,7 +241,6 @@
     </div>
   </div>
 </div>
-
 <!-- Change Password -->
 <div class="modal fade" id="edit_system_status" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
   aria-hidden="true">
@@ -276,7 +271,6 @@
     </div>
   </div>
 </div>
-
 <!-- Change Password -->
 <div class="modal fade" id="edit_review_post_status" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
   aria-hidden="true">

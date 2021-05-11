@@ -12,7 +12,6 @@
     </h4>
     </div>
   </div>
-
   <div class="row">
     <div class="col-md-12">
       <div class="card">
@@ -28,7 +27,7 @@
             <tbody id="sortablecourses">
             <?php foreach ($courses as $course) {?>
               <tr class="sortcourse" data-id="<?php echo $course['courID'];?>">
-                <td style="cursor: all-scroll;"><?php echo ucwords($course['title']);?></td>
+                <td style="cursor: all-scroll;"><?php echo ucfirst($course['title']);?></td>
                 <td class="text-center">
                 <?php if($course['courstat'] == 0){?>
                 <span class="badge badge-pill badge-danger">Inactive</span>

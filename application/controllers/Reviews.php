@@ -31,7 +31,6 @@ class Reviews extends CI_Controller {
 		$this->load->view('admin/'.$page, $data);
 		$this->load->view('templates/admin/footer');
         $this->load->view('templates/admin/scripts');
-        $this->load->view('templates/admin/page_scripts/default');
 	}
 
 	public function edit_review($id){
@@ -50,7 +49,6 @@ class Reviews extends CI_Controller {
 		$this->load->view('admin/reviews-edit', $data);
 		$this->load->view('templates/admin/footer');
 		$this->load->view('templates/admin/scripts');
-		$this->load->view('templates/admin/page_scripts/default');
 	}
 
 	function create() {

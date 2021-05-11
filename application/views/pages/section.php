@@ -47,19 +47,40 @@
                   <?php } ?>
                 <?php } ?> 
               <p class="mb-4 font-italic" style="font-size: 16px;"><?php echo $i.') '.ucfirst($content['name']);?></p>
-              <?php echo $content['content'];?>
-              <div class="input-group justify-content-center">
+              <div class="input-group justify-content-center mb-4">
                 <div class="input-group-prepend">
                   <a class="btn btn-sm btn-indigo m-0 prev_content" data-current-row="<?php echo $count;?>" data-id="<?php echo $content['id'];?>" data-src="<?php echo $content['url'];?>" data-video-id="<?php echo $video_ID;?>" data-video="<?php echo $player;?>"><i class="fas fa-angle-double-left"></i> Prev</a>
                   <a class="btn btn-sm btn-indigo m-0 next_content" data-current-row="<?php echo $count;?>" data-id="<?php echo $content['id'];?>" data-src="<?php echo $content['url'];?>" data-video-id="<?php echo $video_ID;?>" data-video="<?php echo $player;?>">Next <i class="fas fa-angle-double-right"></i></a>
                 </div>
               </div><!--Input Group-->
+              <?php echo $content['content'];?>
+              <?php if (!empty($content['url'])) {?>
+                <?php $found_key = array_search($content['id'], array_column($my_ratings, 'content_ID')); if(!$found_key){ ?>
+                <div class="mt-4" id="add_rating_<?php echo $content['id'];?>">
+                  <h5>Rate this video</h5>
+                  <span id="rateMe_<?php echo $content['id'];?>" class="mb-4"></span>
+                  <input type="hidden" id="feedback_rating_<?php echo $content['id'];?>">
+                  <div class="form-group">
+                    <textarea class="form-control rounded-0" id="feedback_<?php echo $content['id'];?>" id="feedback" rows="2" placeholder="Write your review"></textarea>
+                  </div>
+                  <script type="text/javascript">
+                  $(document).ready(function() {
+                    $('#rateMe_<?php echo $content['id'];?>').mdbRate();
+                    $('#rateMe_<?php echo $content['id'];?>').hover(function() {
+                      var count = $('#rateMe_<?php echo $content['id'];?> .amber-text').length;
+                      $('#feedback_rating_<?php echo $content['id'];?>').val(count);
+                    });
+                  });
+                  </script>
+                  <button type="button" class="btn btn-success btn-md submit_rating" data-content-id="<?php echo $content['id'];?>">Submit Review</button>
+                </div>
+              <?php } } ?>
             </div><!--Card-->
           <?php $i++; $count++;} ?>
         <?php } ?>
       <?php } } ?>
       <div class="myList">
-      <?php $count=1; foreach ($lessons as $lesson) {
+        <?php $count=1; foreach ($lessons as $lesson) {
           if ($lesson['status'] == 1) {
         ?>
         <h4 class="indigo-text h-1">
@@ -95,9 +116,11 @@
                             </div>
                             <p class="duration float-right mr-2 text-white p-0 duration_<?php echo $content['id'];?>" style="font-size: 12px;"></p>
                           <div class="flex-1">
-                            <h6 class="m-3 text-left"><span class="green-text watched_<?php echo $content['id'];?> mr-1">
+                            <h6 class="m-2 text-left"><span class="green-text watched_<?php echo $content['id'];?> mr-1">
                             </span><strong><?php echo $c.') '.ucfirst($content['name']);?></strong></h6>     
                           </div>
+                          <span id="content_rating_<?php echo $content['id'];?>">
+                          </span>
                         </div>
                       </a>
                       <?php } else { ?>
@@ -145,18 +168,37 @@ $(document).ready(function() {
   mypurchase(slug, course_slug, section_slug);
   watched();
 
+  $(document).on('click', '.submit_rating', function(){
+    var content_ID = $(this).data('content-id');
+    var rating = $('#feedback_rating_'+content_ID).val();
+    var feedback = $('#feedback_'+content_ID).val();
+    if(rating != ''){
+      $.ajax({
+        url:"<?=base_url()?>courses/submit_rating",
+        method:"POST",
+        async : true,
+        dataType : 'json',
+        data:{content_ID:content_ID, rating:rating, feedback:feedback},
+        success:function(data) {
+          toastr.success('Review submitted');
+          $('#add_rating_'+content_ID).remove();
+        }
+      })
+    } else {
+     toastr.error('Add rating');
+    }
+  });
+
   if(window.location.hash != ''){ 
     var hash = document.URL.substr(document.URL.indexOf('#')+1);
     $('.content_id'+hash).show(); 
     $('.text_content_id_'+hash).addClass('border border-primary rounded-lg'); 
-
     if($('.content_id'+hash).data('src')){
       var src = $('.content_id'+hash).data('src');
       var vimeo_ID = $('.content_id'+hash).data('video-id');
       var content = $('.content_id'+hash).data('id');
       createvideo(src, vimeo_ID, content);
     } 
-
     if(hash.substring(0,6) == 'lesson'){
       var lesson = hash.substring(7);
       $('html, body').animate({
@@ -184,12 +226,16 @@ $(document).ready(function() {
         success: function(data){
           if(data.status == true){
             handle_data(data.progress);
-            if(data.finished == 0){
-              simulationTime(data.progress);
+            if(section_slug != '005-live-mastermind-group-coaching'){
+              if(data.finished == 0){
+                simulationTime(data.progress);
+              }
             }
           } else {
             handle_data(0);
-            simulationTime(0);
+            if(section_slug != '005-live-mastermind-group-coaching'){
+              simulationTime(0);
+            }
           }
         }
       });
@@ -395,6 +441,34 @@ $(document).ready(function() {
       success: function(data){
         for(i=0; i<data.length; i++){
           $('.duration_'+data[i].content_ID).text(secondsTimeSpanToHMS(Math.round(data[i].duration)));
+        }
+      }
+    });
+    $.ajax({
+      type  : 'post',
+      url   : "<?=base_url()?>courses/get_content_ratings",
+      dataType : 'json',
+      data : {section_slug:section_slug},
+      success : function(data){
+        var i;
+        for(i=0; i<data.length; i++){
+          if(data[i].average - Math.floor(data[i].average)){
+            var r = 1;
+          } else {
+            var r = 0;
+          }
+          
+          var html = '';
+          while(data[i].average > r){
+            html +='<i class="fas fa-star amber-text"></i>';
+            r++;
+          }
+
+          if(data[i].average - Math.floor(data[i].average)){
+            html += '<i class="fas fa-star-half amber-text"></i>';
+          }
+      
+          $('#content_rating_'+data[i].content_ID).html(html);
         }
       }
     });

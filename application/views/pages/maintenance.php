@@ -72,17 +72,16 @@ p, h1, h2, h3, h4, h5, h6, label, td, dt, dd, li, span, tr{
   <div class="row">
     <div class="col-lg-5 mx-auto wow fadeIn pt-4 mt-4">
       <div class="jumbotron card card-image">
-  <div class="text-dark text-center py-5 px-4">
-     <img alt="Logo" src="<?php echo base_url(); ?>assets/img/logo.png" class="img-fluid wow bounceInUp slow mb-5">
-    <div>
-      <h2 class="card-title h1-responsive pt-3 mb-2 font-bold"><strong>Under Maintenance</strong></h2>
-      <p class="mx-5 mb-5">Currently undergoing maintenance to serve you better. Come back later.
-      </p>
-      <a class="btn btn-outline-primary btn-md" href="https://www.studying.com"><i class="fas fa-globe left"></i> Studying.com</a>
-    </div>
-  </div>
-</div>
+        <div class="text-dark text-center py-5 px-4">
+           <img alt="Logo" src="<?php echo base_url(); ?>assets/img/logo.png" class="img-fluid wow bounceInUp slow mb-5">
+          <div>
+            <h2 class="card-title h1-responsive pt-3 mb-2 font-bold"><strong>Under Maintenance</strong></h2>
+            <p class="mx-5 mb-5">Currently undergoing maintenance to serve you better. Come back later.
+            </p>
+            <a class="btn btn-outline-primary btn-md" href="https://www.studying.com"><i class="fas fa-globe left"></i> Studying.com</a>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
-</div>

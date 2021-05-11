@@ -26,6 +26,7 @@
   <link rel="stylesheet" href="<?php echo base_url('/assets/plugins/toastr/toastr.min.css'); ?>">
   <script src="<?php echo base_url('/assets/plugins/toastr/toastr.min.js'); ?>"></script>
   <link rel="stylesheet" href="<?php echo base_url('/assets/plugins/select2/css/select2.min.css'); ?>">
+  <script src="<?php echo base_url();?>assets/plugins/ckeditor/ckeditor.js"></script>
 <style>
 .modal {
   overflow-y:auto;

@@ -22,7 +22,7 @@
 	}
 
 	public function all_users(){
-		$this->db->select('id, first_name, last_name');
+		$this->db->select('id, first_name, last_name, image');
 		$this->db->where('status', '1');
 		$this->db->order_by('first_name', 'ASC');
 		$query = $this->db->get('users');
@@ -31,7 +31,7 @@
 	}
 
 	public function get_users($user_ID){
-		$this->db->select('users.id as usID, users.first_name as usFN, users.last_name as usLN, users.level as usLvl, users.image as usImg, level.name, users.login_status as last, level.image as level_image');
+		$this->db->select('users.id as user_ID, users.first_name as first_name, users.last_name as last_name, users.level as usLvl, users.image as usImg, level.name, users.login_status as last, level.image as level_image, users.last_login as last_login');
 		$this->db->join('users', 'messages.toID = users.id or messages.fromID = users.id');
 		$this->db->join('users_level', 'users.level = users_level.level');
 		$this->db->join('level', 'level.id = users_level.name');
@@ -113,8 +113,13 @@
 		}
 	}
 
-	public function send_group_message($user_ID, $group_ID, $message, $chat_ID){
+	public function send_group_message($user_ID, $group_ID, $message, $chat_ID, $tagged_users){
 		$this->db->trans_begin();
+		$this->load->model('user_model', 'users');
+
+		$this->db->set('exp', 'exp+10', FALSE);
+		$this->db->where('id', $user_ID);
+		$this->db->update('users');
 		$data = array(
 			'group_ID' => $group_ID,
 			'sender_ID' => $user_ID,
@@ -122,12 +127,26 @@
 			'message' => $message,
 			'status' => '0'
 		);
-
-		$this->db->set('exp', 'exp+10', FALSE);
-		$this->db->where('id', $user_ID);
-		$this->db->update('users');
-
 		$this->db->insert('group_messages', $data);
+		$message_id = $this->db->insert_id();
+
+		$total = count($tagged_users);
+		for($i=0; $i<$total; $i++) {
+			if(trim($tagged_users[$i] != '')) {
+		        $tagged_id = $tagged_users[$i];
+		        $user = $this->users->get_users($tagged_id);
+
+		        $data2 = array(
+		        	'type' => 2,
+		        	'notification_option_id' => 11,
+		        	'id' => $message_id,
+					'notified' => $user['id'],
+					'notifier' => $user_ID,
+				);
+		    	
+				$this->db->insert('users_notifications', $data2);
+			}
+		}
 		if ($this->db->trans_status() === FALSE){
 		    $this->db->trans_rollback();
 		    return false;
@@ -135,6 +154,7 @@
 		    $this->db->trans_commit();
 		    return true;
 		}
+		return $this->db->error();
 	}
 
 	public function message_seen($user_ID, $toID){
@@ -162,7 +182,6 @@
 
 		return $this->db->count_all_results('messages');
 	}
-
 
 	public function message_delete($id){
 		$this->db->set('status', '2');
