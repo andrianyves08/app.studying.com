@@ -1,6 +1,6 @@
 # Web application for online courses of Studying.com
 
-# Login
+Login
 ![Image](lgoin.png)
 
 # Homepage
